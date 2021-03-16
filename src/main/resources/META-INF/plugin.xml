@@ -1,0 +1,20 @@
+<idea-plugin>
+    <id>org.example.IntelliJ Rekoder Plugin</id>
+    <name>Rekoder</name>
+    <vendor email="bubnovdanilbk@gmail.com" url="http://www.rekoder.xyz">Rekoder</vendor>
+
+<!--    <description><![CDATA[-->
+<!--    Rekoder Plugin!!-->
+<!--    ]]></description>-->
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Rekoder Window" secondary="true" anchor="right"
+        factoryClass="ru.hse.ui.window.RekoderToolWindowFactory"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
