@@ -43,10 +43,10 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         JComponent problemInfo = setupProblemInfoPart();
         JComponent tests = setupTestsPart();
 
-        JBSplitter s1 = new JBSplitter(true, 0.3f);
+        JBSplitter s1 = new JBSplitter(true, 0.25f);
         s1.setFirstComponent(explorer);
 
-        JBSplitter s2 = new JBSplitter(true, 0.6f);
+        JBSplitter s2 = new JBSplitter(true, 0.65f);
         s2.setFirstComponent(problemInfo);
         s2.setSecondComponent(tests);
         s1.setSecondComponent(s2);
@@ -113,12 +113,13 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         };
         tests.setLayout(new BoxLayout(tests, BoxLayout.X_AXIS));
         for (int k = 0; k < 100; k++) {
-            JButton button = new JButton("Test" + k);
-            button.addActionListener(a -> {
-                tests.remove(button);
-                tests.updateUI();
-            });
-            tests.add(button, 0);
+            tests.add(new TestPanel(tests).getComponent());
+//            JButton button = new JButton("Test" + k);
+//            button.addActionListener(a -> {
+//                tests.remove(button);
+//                tests.updateUI();
+//            });
+//            tests.add(button, 0);
         }
 
         JBScrollPane scrollPane = new JBScrollPane(tests, JBScrollPane.VERTICAL_SCROLLBAR_NEVER, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -138,7 +139,11 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
     public @Nullable Object getData(@NotNull String dataId) {
         if (DataKeys.PROBLEMS_TREE.is(dataId)) {
             return problemsTree;
+        } else if (DataKeys.TEAMS_LIST.is(dataId)) {
+            return teams;
+        } else if (DataKeys.MEMBERS_LIST.is(dataId)) {
+            return members;
         }
-        return null;
+        return super.getData(dataId);
     }
 }
