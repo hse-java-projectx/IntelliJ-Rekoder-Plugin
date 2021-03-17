@@ -10,11 +10,18 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Rekoder Window" secondary="true" anchor="right"
-        factoryClass="ru.hse.ui.window.RekoderToolWindowFactory"/>
+        <toolWindow id="rekoderWindow" secondary="true" anchor="right"
+        factoryClass="ru.hse.plugin.ui.window.RekoderToolWindowFactory"/>
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
+        <action id="rekoder.LoginAction" class="ru.hse.plugin.actions.LoginAction"
+                text="Sign in" description="Sign in" icon="RekoderIcons.LOGIN">
+        </action>
+
+        <group id="rekoder.MainWindowToolbar">
+            <reference id="rekoder.LoginAction"/>
+        </group>
+
     </actions>
 </idea-plugin>
