@@ -12,20 +12,18 @@ import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import com.intellij.ui.treeStructure.Tree;
-import icons.RekoderIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.hse.plugin.data.Team;
 import ru.hse.plugin.data.User;
 import ru.hse.plugin.ui.renderers.MembersListRenderer;
+import ru.hse.plugin.ui.renderers.ProblemsTreeRenderer;
 import ru.hse.plugin.ui.renderers.TeamsListRenderer;
 import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.awt.event.*;
 
 public class RekoderMainToolWindow extends SimpleToolWindowPanel implements DataProvider {
     private Tree problemsTree;
@@ -74,6 +72,15 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         members = new JBList<>(membersModel);
         members.setCellRenderer(new MembersListRenderer());
 
+        teams.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    System.out.println(teams.getSelectedValue());
+                }
+            }
+        });
+
         teamsModel.addElement(new User("Personal"));
         for (int k = 0; k < 100; k++) {
             teamsModel.addElement(new Team("Team " + k));
@@ -83,6 +90,7 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         problemsTree = new Tree();
         problemsTree.setRootVisible(false);
         problemsTree.getEmptyText().clear().appendLine("Please Login to view problems");
+        problemsTree.setCellRenderer(new ProblemsTreeRenderer());
 
         JBSplitter horizontalSplitter = new JBSplitter(false, 0.6f);
         horizontalSplitter.setFirstComponent(new JBScrollPane(problemsTree, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));

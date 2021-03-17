@@ -9,4 +9,6 @@ public interface RekoderIcons {
     Icon USER = IconLoader.getIcon("/icons/user.svg");
     Icon TEAM = IconLoader.getIcon("/icons/team.svg");
     Icon OTHER_USER = IconLoader.getIcon("/icons/other_user.svg");
+    Icon FOLDER = IconLoader.getIcon("/icons/folder.svg");
+    Icon PROBLEM = IconLoader.getIcon("/icons/problem.svg");
 }
