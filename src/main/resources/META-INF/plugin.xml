@@ -13,6 +13,9 @@
         <toolWindow id="rekoderWindow" secondary="true" anchor="right"
         factoryClass="ru.hse.plugin.ui.window.RekoderToolWindowFactory"
         canCloseContents="true"/>
+
+        <applicationService
+                serviceImplementation="ru.hse.plugin.data.Credentials"/>
     </extensions>
 
     <actions>

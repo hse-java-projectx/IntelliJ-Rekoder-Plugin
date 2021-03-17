@@ -39,7 +39,7 @@ public class TestPanel extends Test {
         s3.setSecondComponent(button);
         button.addActionListener(a -> {
             JBPopupFactory.getInstance().createConfirmation("Sure?", "Yes", "No", () -> {parent.remove(panel); parent.updateUI();}, 0).showInCenterOf(s3);
-        });
+        }); // TODO: вынести в отдельный файл
 
         s1.setFirstComponent(new JBScrollPane(inputArea, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
         s2.setFirstComponent(s3);

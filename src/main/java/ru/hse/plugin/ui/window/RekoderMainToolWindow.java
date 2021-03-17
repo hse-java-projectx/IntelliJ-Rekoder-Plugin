@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBList;
@@ -15,14 +14,19 @@ import com.intellij.ui.components.JBTextArea;
 import com.intellij.ui.treeStructure.Tree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.hse.plugin.data.Folder;
 import ru.hse.plugin.data.Team;
 import ru.hse.plugin.data.User;
+import ru.hse.plugin.managers.ProblemsTreeManager;
 import ru.hse.plugin.ui.renderers.MembersListRenderer;
 import ru.hse.plugin.ui.renderers.ProblemsTreeRenderer;
 import ru.hse.plugin.ui.renderers.TeamsListRenderer;
 import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -65,8 +69,10 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         DefaultListModel<Object> membersModel = new DefaultListModel<>();
         teams = new JBList<>(teamsModel);
         teams.setCellRenderer(new TeamsListRenderer());
+        teams.setEmptyText("Teams");
         members = new JBList<>(membersModel);
         members.setCellRenderer(new MembersListRenderer());
+        members.setEmptyText("Members");
 
         teams.addMouseListener(new MouseAdapter() {
             @Override
@@ -75,15 +81,24 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
                     System.out.println(teams.getSelectedValue());
                 }
             }
-        });
-
-        teamsModel.addElement(new User("Personal"));
-        for (int k = 0; k < 100; k++) {
-            teamsModel.addElement(new Team("Team " + k));
-            membersModel.addElement(new User("Member " + k));
-        }
+        }); // TODO: вынести в отдельный файл
 
         problemsTree = new Tree();
+        problemsTree.addTreeWillExpandListener(new TreeWillExpandListener() {
+            @Override
+            public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+                Folder folder = (Folder) event.getPath().getLastPathComponent();
+                if (!folder.isLoaded()) {
+                    folder.setLoaded();
+                    ProblemsTreeManager.loadFolder(folder);
+                }
+            }
+
+            @Override
+            public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+
+            }
+        }); // TODO: вынести в отдельный файл
         problemsTree.setRootVisible(false);
         problemsTree.getEmptyText().clear().appendLine("Please Login to view problems");
         problemsTree.setCellRenderer(new ProblemsTreeRenderer());
