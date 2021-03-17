@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBList;
@@ -39,15 +40,10 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
 
         JComponent explorer = setupExplorerPart();
         JComponent problemInfo = setupProblemInfoPart();
-        JComponent tests = setupTestsPart();
 
-        JBSplitter s1 = new JBSplitter(true, 0.25f);
+        JBSplitter s1 = new JBSplitter(true, 0.3f);
         s1.setFirstComponent(explorer);
-
-        JBSplitter s2 = new JBSplitter(true, 0.65f);
-        s2.setFirstComponent(problemInfo);
-        s2.setSecondComponent(tests);
-        s1.setSecondComponent(s2);
+        s1.setSecondComponent(problemInfo);
 
         panel.add(s1);
         mainPanel.setContent(panel);
@@ -108,39 +104,6 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         JBTextArea code = new JBTextArea(10, 20);
         code.setBackground(JBColor.GRAY);
         return new JBScrollPane(code, JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    }
-
-    JComponent setupTestsPart() {
-        JPanel tests = new JPanel() {
-            @Override
-            public Dimension getPreferredSize() {
-                Dimension dimension = super.getPreferredSize();
-                dimension.height = 100;
-                return dimension;
-            }
-        };
-        tests.setLayout(new BoxLayout(tests, BoxLayout.X_AXIS));
-        for (int k = 0; k < 100; k++) {
-            tests.add(new TestPanel(tests).getComponent());
-//            JButton button = new JButton("Test" + k);
-//            button.addActionListener(a -> {
-//                tests.remove(button);
-//                tests.updateUI();
-//            });
-//            tests.add(button, 0);
-        }
-
-        JBScrollPane scrollPane = new JBScrollPane(tests, JBScrollPane.VERTICAL_SCROLLBAR_NEVER, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        MouseWheelListener listener = scrollPane.getMouseWheelListeners()[0];
-        scrollPane.addMouseWheelListener(e -> {
-
-            MouseWheelEvent event = new MouseWheelEvent(e.getComponent(), e.getID(), e.getWhen(),
-                    e.getModifiersEx() | InputEvent.SHIFT_DOWN_MASK,
-                    e.getX(), e.getY(),
-                    e.getClickCount(), e.isPopupTrigger(), e.getScrollType(), e.getScrollAmount(), e.getWheelRotation());
-            listener.mouseWheelMoved(event);
-        });
-        return scrollPane;
     }
 
     @Override

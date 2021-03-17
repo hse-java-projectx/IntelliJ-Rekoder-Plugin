@@ -11,16 +11,32 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="rekoderWindow" secondary="true" anchor="right"
-        factoryClass="ru.hse.plugin.ui.window.RekoderToolWindowFactory"/>
+        factoryClass="ru.hse.plugin.ui.window.RekoderToolWindowFactory"
+        canCloseContents="true"/>
     </extensions>
 
     <actions>
         <action id="rekoder.LoginAction" class="ru.hse.plugin.actions.LoginAction"
                 text="Sign in" description="Sign in" icon="RekoderIcons.LOGIN">
         </action>
+        <action id="rekoder.LogoutAction" class="ru.hse.plugin.actions.LogoutAction"
+                text="Sign out" description="Sign out" icon="RekoderIcons.LOGOUT">
+        </action>
+        <action id="rekoder.RefreshAction" class="ru.hse.plugin.actions.RefreshAction"
+                text="Refresh" description="Refresh" icon="RekoderIcons.REFRESH">
+        </action>
+        <action id="rekoder.WebSiteAction" class="ru.hse.plugin.actions.WebSiteAction"
+                text="WebSite" description="Open Rekoder webSite" icon="RekoderIcons.WEB">
+        </action>
+
 
         <group id="rekoder.MainWindowToolbar">
             <reference id="rekoder.LoginAction"/>
+            <reference id="rekoder.LogoutAction"/>
+            <separator/>
+            <reference id="rekoder.RefreshAction"/>
+            <separator/>
+            <reference id="rekoder.WebSiteAction"/>
         </group>
 
     </actions>
