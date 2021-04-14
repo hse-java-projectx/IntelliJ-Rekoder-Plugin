@@ -18,7 +18,6 @@ import javax.swing.tree.DefaultTreeModel;
 import java.util.List;
 
 public class LoginAction extends AnAction {
-
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         setupProblemsTree(e);

@@ -9,8 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 
 
-@State(name = "Credentials",
-        storages = @Storage("rekoder_credentials.xml"))
+@State(name = "Credentials", storages = @Storage("rekoder_credentials.xml"))
 public class Credentials implements PersistentStateComponent<Credentials> {
     private String login;
     private String token;
