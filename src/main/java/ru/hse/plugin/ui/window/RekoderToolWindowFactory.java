@@ -19,7 +19,7 @@ public class RekoderToolWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        RekoderMainToolWindow mainToolWindow = new RekoderMainToolWindow();
+        RekoderMainToolWindow mainToolWindow = new RekoderMainToolWindow(project, toolWindow);
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         Content content = contentFactory.createContent(mainToolWindow, "Personal", false);
         content.setCloseable(false);
