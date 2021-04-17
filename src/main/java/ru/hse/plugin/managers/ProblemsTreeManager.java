@@ -26,7 +26,9 @@ public class ProblemsTreeManager {
         }
         steps = rand.nextInt(10) + 1;
         for (int k = 0; k < steps; k++) {
-            folder.add(new Problem("Problem" + rand.nextInt()));
+            Problem problem = new Problem();
+            problem.setName("Problem" + rand.nextInt());
+            folder.add(problem);
         }
     }
 }
