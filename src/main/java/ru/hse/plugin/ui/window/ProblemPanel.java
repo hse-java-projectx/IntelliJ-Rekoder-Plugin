@@ -43,42 +43,17 @@ public class ProblemPanel extends JPanel {
     public ProblemPanel(Project project, ToolWindow toolWindow) {
         super(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
-
-        setupProblemNameLabel(c);
         setupProblemName(c);
-
-        setupProblemConditionLabel(c);
-
-        setupProblemStateLabel(c);
         setupProblemState(c);
-
-        setupNumberOfAttemptsLabel(c);
         setupNumberOfAttempts(c);
-
-        setupProblemSourceLabel(c);
         setupProblemSource(c);
-
-        setupTagsLabel(c);
         setupTags(c);
-
         setupButtons(project, toolWindow, c);
-
         setupProblemCondition(c);
     }
 
-    private void setupProblemNameLabel(GridBagConstraints c) {
-        JLabel problemNameLabel = new JLabel("Problem name:");
-        problemNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 0;
-        c.anchor = GridBagConstraints.LINE_START;
-        c.weighty = 0.0;
-        c.insets = JBUI.insets(5);
-        add(problemNameLabel, c);
-    }
-
     private void setupProblemName(GridBagConstraints c) {
+        setupLabel(0, 0, "Problem name:", c);
         problemName.setBody("AVL Tree");
         c.gridx = 1;
         c.gridy = 0;
@@ -87,30 +62,8 @@ public class ProblemPanel extends JPanel {
         add(problemName, c);
     }
 
-    private void setupProblemConditionLabel(GridBagConstraints c) {
-        JLabel problemConditionLabel = new JLabel("Condition:");
-        problemConditionLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weighty = 0.0;
-        c.anchor = GridBagConstraints.LINE_START;
-        add(problemConditionLabel, c);
-    }
-
-    private void setupProblemStateLabel(GridBagConstraints c) {
-        JLabel currentStateLabel = new JLabel("Current state:");
-        currentStateLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 3;
-        c.weighty = 0.0;
-        c.weightx = 0.0;
-        c.anchor = GridBagConstraints.LINE_START;
-        c.insets = JBUI.insets(5);
-        add(currentStateLabel, c);
-    }
-
     private void setupProblemState(GridBagConstraints c) {
+        setupLabel(0, 3, "Number of attempts:", c);
         problemState.setForeground(JBColor.GREEN);
         problemState.setText("Passed");
         c.gridx = 1;
@@ -121,18 +74,8 @@ public class ProblemPanel extends JPanel {
         add(problemState, c);
     }
 
-    private void setupNumberOfAttemptsLabel(GridBagConstraints c) {
-        JLabel numberOfAttemptsLabel = new JLabel("Number of attempts:");
-        numberOfAttemptsLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        c.gridx = 2;
-        c.weightx = 0.0;
-        c.weighty = 0.0;
-        c.gridy = 3;
-        c.insets = JBUI.insets(5);
-        add(numberOfAttemptsLabel, c);
-    }
-
     private void setupNumberOfAttempts(GridBagConstraints c) {
+        setupLabel(2, 3, "Number of attempts:", c);
         numberOfAttempts.setForeground(JBColor.BLUE);
         numberOfAttempts.setText("100");
         numberOfAttempts.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -149,6 +92,8 @@ public class ProblemPanel extends JPanel {
     }
 
     private void setupProblemCondition(GridBagConstraints c) {
+        setupLabel(0, 1, "Condition:", c);
+
         problemCondition.setLineWrap(true);
         problemCondition.setWrapStyleWord(true);
         problemCondition.setText("На столе в ряд выложены \uD835\uDC5B кубиков, каждый из которых покрашен в черный или белый цвет. Кубики пронумерованы слева направо, начиная с единицы.\n" +
@@ -172,22 +117,13 @@ public class ProblemPanel extends JPanel {
         c.gridx = 0;
         c.gridy = 2;
         c.weighty = 0.5;
+        c.gridwidth = 4;
         c.insets = JBUI.insets(0, 5, 5, 5);
         add(new JBScrollPane(problemCondition), c);
     }
 
-    private void setupProblemSourceLabel(GridBagConstraints c) {
-        JLabel sourceLabel = new JLabel("Source:");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 4;
-        c.anchor = GridBagConstraints.LINE_START;
-        c.weighty = 0.0;
-        c.insets = JBUI.insets(5);
-        add(sourceLabel, c);
-    }
-
     private void setupProblemSource(GridBagConstraints c) {
+        setupLabel(0, 4, "Source:", c);
         problemSource.setBody("<a href=\"https://codeforces.com/\">codeforces</a>");
         c.gridx = 1;
         c.gridy = 4;
@@ -196,18 +132,8 @@ public class ProblemPanel extends JPanel {
         add(problemSource, c);
     }
 
-    private void setupTagsLabel(GridBagConstraints c) {
-        JLabel tagsLabel = new JLabel("Tags:");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 5;
-        c.anchor = GridBagConstraints.LINE_START;
-        c.weighty = 0.0;
-        c.insets = JBUI.insets(5);
-        add(tagsLabel, c);
-    }
-
     private void setupTags(GridBagConstraints c) {
+        setupLabel(0, 5, "Tags:", c);
         c.gridx = 1;
         c.gridy = 5;
         c.weighty = 0.0;
@@ -270,8 +196,27 @@ public class ProblemPanel extends JPanel {
         });
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//        startSolving.setEnabled(false);
+//        previewCode.setEnabled(false);
         buttonsPanel.add(startSolving);
         buttonsPanel.add(previewCode);
         return buttonsPanel;
+    }
+
+    private void setupLabel(int x, int y, String name, GridBagConstraints c) {
+        JLabel label = new JLabel(name);
+        if (x == 0) {
+            label.setHorizontalAlignment(SwingConstants.LEFT);
+            c.anchor = GridBagConstraints.LINE_START;
+        } else if (x == 2) {
+            label.setHorizontalAlignment(SwingConstants.RIGHT);
+        }
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = x;
+        c.gridy = y;
+        c.weighty = 0.0;
+        c.weightx = 0.0;
+        c.insets = JBUI.insets(5);
+        add(label, c);
     }
 }

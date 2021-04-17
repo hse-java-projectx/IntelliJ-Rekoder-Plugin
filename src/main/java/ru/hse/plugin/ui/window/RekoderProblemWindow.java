@@ -43,9 +43,7 @@ public class RekoderProblemWindow extends SimpleToolWindowPanel implements DataP
     }
 
     JComponent setupProblemInfoPart() {
-        JBTextArea code = new JBTextArea(10, 20);
-        code.setBackground(JBColor.GRAY);
-        return new JBScrollPane(code, JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        return new SubmissionPanel();
     }
 
     JComponent setupTestsPart() {
