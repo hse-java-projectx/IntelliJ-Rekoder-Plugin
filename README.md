@@ -1,5 +1,6 @@
 # IntelliJ Rekoder Plugin
 
 ## Current State
-![Current view](./images/17-03-21-3b.png)
-![Current view](./images/17-03-21-3a.png)
+![Main window](./images/17-04-21-1.png)
+![Problem window](./images/17-04-21-2.png)
+![Code window](./images/17-04-21-3.png)
