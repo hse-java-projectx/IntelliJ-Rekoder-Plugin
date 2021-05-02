@@ -4,17 +4,15 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
+import ru.hse.plugin.managers.MainWindowManager;
 
 public class RefreshAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        Credentials credentials = Credentials.getInstance();
-        if (credentials == null) {
-            System.out.println("Упс");
-        } else {
-            credentials.setLogin("Danil");
-            credentials.setToken("Token");
-        }
+        MainWindowManager.updateProblemsTree(e.getProject());
+        MainWindowManager.updateTeamsList(e.getProject());
+        MainWindowManager.clearProblemPanel(e.getProject());
+        // TODO: можно вывести сообщение об успешности или не успешности обновления
     }
 }

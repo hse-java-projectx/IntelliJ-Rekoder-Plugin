@@ -4,11 +4,16 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,15 +25,17 @@ public class RekoderProblemWindow extends SimpleToolWindowPanel implements DataP
 
     private final SimpleToolWindowPanel mainPanel = new SimpleToolWindowPanel(true, true);
 
-    RekoderProblemWindow() {
+    private final SubmissionPanel submissionPanel;
+
+    RekoderProblemWindow(Project project, ToolWindow toolWindow) {
         super(true, true);
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JComponent problemInfo = setupProblemInfoPart();
+        submissionPanel = setupProblemInfoPart(project, toolWindow);
         JComponent tests = setupTestsPart();
         JBSplitter s1 = new JBSplitter(true, 0.7f);
-        s1.setFirstComponent(problemInfo);
+        s1.setFirstComponent(submissionPanel);
         s1.setSecondComponent(tests);
 
         panel.add(s1);
@@ -42,8 +49,8 @@ public class RekoderProblemWindow extends SimpleToolWindowPanel implements DataP
         setContent(mainPanel);
     }
 
-    JComponent setupProblemInfoPart() {
-        return new SubmissionPanel();
+    SubmissionPanel setupProblemInfoPart(Project project, ToolWindow toolWindow) {
+        return new SubmissionPanel(project, toolWindow);
     }
 
     JComponent setupTestsPart() {
@@ -78,4 +85,13 @@ public class RekoderProblemWindow extends SimpleToolWindowPanel implements DataP
         });
         return scrollPane;
     }
+
+    @Override
+    public @Nullable Object getData(@NotNull String dataId) {
+        if (DataKeys.SUBMISSION_PANEL.is(dataId)) {
+            return submissionPanel;
+        }
+        return super.getData(dataId);
+    }
+
 }

@@ -21,22 +21,30 @@ public class RekoderToolWindowFactory implements ToolWindowFactory {
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         RekoderMainToolWindow mainToolWindow = new RekoderMainToolWindow(project, toolWindow);
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        Content content = contentFactory.createContent(mainToolWindow, "Personal", false);
+        Content content = contentFactory.createContent(mainToolWindow, "Explorer", false);
         content.setCloseable(false);
         toolWindow.getContentManager().addContent(content);
 
-        RekoderProblemWindow problemToolWindow = new RekoderProblemWindow();
+        RekoderProblemWindow problemToolWindow = new RekoderProblemWindow(project, toolWindow);
         Content content1 = contentFactory.createContent(problemToolWindow, "Problem", false);
-        content1.setCloseable(true);
+        content1.setCloseable(false);
         toolWindow.getContentManager().addContent(content1);
-//        toolWindow.getContentManager().setSelectedContent(content1);
+        toolWindow.getContentManager().setSelectedContent(content);
     }
 
     @NotNull
-    public static DataContext getDataContext(@NotNull Project project) {
+    public static DataContext getExplorerDataContext(@NotNull Project project) {
         ToolWindow rekoderToolWindow = ToolWindowManager.getInstance(project).getToolWindow(MAIN_WINDOW_ID);
         Objects.requireNonNull(rekoderToolWindow);
         Content content = rekoderToolWindow.getContentManager().getContent(0);
+        return DataManager.getInstance().getDataContext(content.getComponent());
+    }
+
+    @NotNull
+    public static DataContext getProblemDataContext(@NotNull Project project) {
+        ToolWindow rekoderToolWindow = ToolWindowManager.getInstance(project).getToolWindow(MAIN_WINDOW_ID);
+        Objects.requireNonNull(rekoderToolWindow);
+        Content content = rekoderToolWindow.getContentManager().getContent(1);
         return DataManager.getInstance().getDataContext(content.getComponent());
     }
 }

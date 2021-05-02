@@ -2,12 +2,11 @@ package ru.hse.plugin.data;
 
 import com.intellij.ui.JBColor;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 
-public class Problem extends DefaultMutableTreeNode {
+public class Problem extends TreeFile {
     public enum State {
         PASSED {
             @Override

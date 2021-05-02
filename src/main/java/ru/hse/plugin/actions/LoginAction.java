@@ -1,57 +1,36 @@
 package ru.hse.plugin.actions;
 
+import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.ui.components.JBList;
-import com.intellij.ui.treeStructure.Tree;
+import com.intellij.vcsUtil.AuthDialog;
 import org.jetbrains.annotations.NotNull;
-import ru.hse.plugin.data.Folder;
-import ru.hse.plugin.managers.MembersManager;
-import ru.hse.plugin.managers.ProblemsTreeManager;
-import ru.hse.plugin.managers.TeamsManager;
-import ru.hse.plugin.ui.window.RekoderToolWindowFactory;
-import ru.hse.plugin.utils.DataKeys;
 
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import java.util.List;
+import ru.hse.plugin.data.Credentials;
+import ru.hse.plugin.managers.BackendConnection;
+import ru.hse.plugin.managers.MainWindowManager;
+
 
 public class LoginAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        setupProblemsTree(e);
-        setupTeamsList(e);
-        setUpMembersList(e);
-    }
-
-    private void setupProblemsTree(AnActionEvent e) {
-        Tree tree = RekoderToolWindowFactory.getDataContext(e.getProject()).getData(DataKeys.PROBLEMS_TREE);
-
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
-        List<Folder> rootFolders = ProblemsTreeManager.getRootFolders();
-        for (Folder folder : rootFolders) {
-            root.add(folder);
+        Credentials credentials = Credentials.getInstance();
+        AuthDialog dialog = new AuthDialog(e.getProject(), "Login", "Login to Rekoder", credentials.getLogin(), null, true);
+        if (!dialog.showAndGet()) {
+            return;
         }
+        String token = BackendConnection.login(dialog.getUsername(), dialog.getPassword());
+        if (token == null) { // TODO: заново выводить окно
+//            Notification notification = new Notification(MyNotifier.NOTIFICATION_GROUP.getDisplayId(), "Login", "Login failed", NotificationType.ERROR);
+            Notification notification = NotificationGroup.toolWindowGroup("rekoder", "rekoderWindow").createNotification("Login failed", NotificationType.ERROR);
+            Notifications.Bus.notify(notification, e.getProject());
+            return;
+        }
+        credentials.setLogin(dialog.getUsername());
+        credentials.setToken(dialog.getPassword());
 
-        DefaultTreeModel problemsModel = new DefaultTreeModel(root);
-
-        tree.setModel(problemsModel);
-    }
-
-    private void setupTeamsList(AnActionEvent e) {
-        JBList<Object> teams = RekoderToolWindowFactory.getDataContext(e.getProject()).getData(DataKeys.TEAMS_LIST);
-        List<Object> teamsList = TeamsManager.getTeams();
-        DefaultListModel<Object> model = new DefaultListModel<>();
-        model.addAll(teamsList);
-        teams.setModel(model);
-    }
-
-    private void setUpMembersList(AnActionEvent e) {
-        JBList<Object> members = RekoderToolWindowFactory.getDataContext(e.getProject()).getData(DataKeys.MEMBERS_LIST);
-        List<Object> membersList = MembersManager.getMembers();
-        DefaultListModel<Object> model = new DefaultListModel<>();
-        model.addAll(membersList);
-        members.setModel(model);
+        MainWindowManager.updateProblemsTree(e.getProject());
+        MainWindowManager.updateTeamsList(e.getProject());
+        MainWindowManager.clearProblemPanel(e.getProject());
     }
 }

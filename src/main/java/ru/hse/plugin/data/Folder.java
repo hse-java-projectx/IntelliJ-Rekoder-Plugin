@@ -1,8 +1,6 @@
 package ru.hse.plugin.data;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
-public class Folder extends DefaultMutableTreeNode {
+public class Folder extends TreeFile {
     private final String name;
     private boolean loaded = false;
 
@@ -16,6 +14,10 @@ public class Folder extends DefaultMutableTreeNode {
 
     public void setLoaded() {
         loaded = true;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

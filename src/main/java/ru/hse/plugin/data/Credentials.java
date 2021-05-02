@@ -14,6 +14,10 @@ public class Credentials implements PersistentStateComponent<Credentials> {
     private String login;
     private String token;
 
+    private Credentials() {
+
+    }
+
     public String getLogin() {
         return login;
     }

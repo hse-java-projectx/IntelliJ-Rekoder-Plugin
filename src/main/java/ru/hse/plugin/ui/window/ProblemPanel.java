@@ -40,6 +40,16 @@ public class ProblemPanel extends JPanel {
         problem.getTags().forEach(t -> tagsPanel.add(new JLabel(t)));
     }
 
+    public void clearProblem() {
+        this.problem = null;
+        problemName.setBody("");
+        problemState.setText("");
+        numberOfAttempts.setText("");
+        problemCondition.setText("");
+        problemSource.setBody("");
+        tagsPanel.removeAll();
+    }
+
     public ProblemPanel(Project project, ToolWindow toolWindow) {
         super(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -54,7 +64,6 @@ public class ProblemPanel extends JPanel {
 
     private void setupProblemName(GridBagConstraints c) {
         setupLabel(0, 0, "Problem name:", c);
-        problemName.setBody("AVL Tree");
         c.gridx = 1;
         c.gridy = 0;
         c.weighty = 0.0;
@@ -64,8 +73,6 @@ public class ProblemPanel extends JPanel {
 
     private void setupProblemState(GridBagConstraints c) {
         setupLabel(0, 3, "Number of attempts:", c);
-        problemState.setForeground(JBColor.GREEN);
-        problemState.setText("Passed");
         c.gridx = 1;
         c.gridy = 3;
         c.weighty = 0.0;
@@ -77,7 +84,6 @@ public class ProblemPanel extends JPanel {
     private void setupNumberOfAttempts(GridBagConstraints c) {
         setupLabel(2, 3, "Number of attempts:", c);
         numberOfAttempts.setForeground(JBColor.BLUE);
-        numberOfAttempts.setText("100");
         numberOfAttempts.setHorizontalAlignment(SwingConstants.RIGHT);
         numberOfAttempts.setOpaque(true);
         numberOfAttempts.setBackground(JBColor.WHITE);
@@ -96,23 +102,6 @@ public class ProblemPanel extends JPanel {
 
         problemCondition.setLineWrap(true);
         problemCondition.setWrapStyleWord(true);
-        problemCondition.setText("На столе в ряд выложены \uD835\uDC5B кубиков, каждый из которых покрашен в черный или белый цвет. Кубики пронумерованы слева направо, начиная с единицы.\n" +
-                "\n" +
-                "Вы можете ноль или более раз применить к последовательности кубиков следующую операцию: выбрать два соседних кубика и инвертировать их цвета (заменить белый на чёрный, и наоборот).\n" +
-                "\n" +
-                "Определите такую последовательность операций, что после их применения все кубики станут либо полностью белыми, либо полностью чёрными. Вам не нужно минимизировать количество операций, но их количество не должно превосходить 3⋅\uD835\uDC5B. Если невозможно сделать все кубики одноцветными, сообщите об этом.\n" +
-                "\n" +
-                "Входные данные\n" +
-                "В первой строке следует целое число \uD835\uDC5B (2≤\uD835\uDC5B≤200) — количество кубиков.\n" +
-                "\n" +
-                "Во второй строке следует строка \uD835\uDC60 длины \uD835\uDC5B, состоящая из символов «W» и «B». Если \uD835\uDC56-й символ строки равен «W», то \uD835\uDC56-й кубик изначально имеет белый цвет. Если \uD835\uDC56-й символ строки равен «B», то \uD835\uDC56-й кубик изначально имеет чёрный цвет.\n" +
-                "\n" +
-                "Выходные данные\n" +
-                "Если невозможно сделать все кубики одноцветными с помощью описанных операций, выведите −1.\n" +
-                "\n" +
-                "В противном случае, в первую строку выведите целое число \uD835\uDC58 (0≤\uD835\uDC58≤3⋅\uD835\uDC5B) — количество операций, которые нужно произвести. Во второй строке выведите \uD835\uDC58 целых чисел \uD835\uDC5D1,\uD835\uDC5D2,…,\uD835\uDC5D\uD835\uDC58 (1≤\uD835\uDC5D\uD835\uDC57≤\uD835\uDC5B−1), где \uD835\uDC5D\uD835\uDC57 равно позиции левого из двух соседних кубиков, у которых нужно инвертировать цвета во время \uD835\uDC57-й операции.\n" +
-                "\n" +
-                "Если ответов несколько, разрешается вывести любой из них.");
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 2;
@@ -124,7 +113,6 @@ public class ProblemPanel extends JPanel {
 
     private void setupProblemSource(GridBagConstraints c) {
         setupLabel(0, 4, "Source:", c);
-        problemSource.setBody("<a href=\"https://codeforces.com/\">codeforces</a>");
         c.gridx = 1;
         c.gridy = 4;
         c.weighty = 0.0;
@@ -138,11 +126,6 @@ public class ProblemPanel extends JPanel {
         c.gridy = 5;
         c.weighty = 0.0;
         c.insets = JBUI.insets(5);
-        JLabel label1 = new JLabel("Tag1");
-//        label1.setBackground(JBColor.CYAN);
-//        label1.setOpaque(true);
-        tagsPanel.add(label1);
-        tagsPanel.add(new JLabel("Tag2"));
         add(tagsPanel, c);
     }
 

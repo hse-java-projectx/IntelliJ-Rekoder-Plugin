@@ -1,5 +1,11 @@
 package ru.hse.plugin.ui.window;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionListener;
+import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -15,6 +21,8 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Submission;
+import com.intellij.execution.runners.ProgramRunner;
+import com.intellij.execution.RunManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,8 +37,13 @@ public class SubmissionPanel extends JPanel {
     private final HtmlPanel memoryConsumed = new SimpleHtmlPanel();
     private final ComboBox<String> files = new ComboBox<>();
 
-    public SubmissionPanel() {
+    private final Project project;
+    private final ToolWindow toolWindow;
+
+    public SubmissionPanel(Project project, ToolWindow toolWindow) {
         super(new GridBagLayout());
+        this.project = project;
+        this.toolWindow = toolWindow;
         GridBagConstraints c = new GridBagConstraints();
         setupProblemName(c);
         setupSubmissions(c);
@@ -44,9 +57,19 @@ public class SubmissionPanel extends JPanel {
         setupProblemCondition(c);
     }
 
+    public void clearSubmission() {
+        problemName.setBody("");
+        problemCondition.setText("");
+        author.setBody("");
+        timeConsumed.setBody("");
+        memoryConsumed.setBody("");
+        submissions.setModel(new DefaultComboBoxModel<>());
+        languages.setModel(new DefaultComboBoxModel<>());
+        files.setModel(new DefaultComboBoxModel<>());
+    }
+
     private void setupProblemName(GridBagConstraints c) {
         setupLabel(0, 0, "Problem name:", c);
-        problemName.setBody("AVL Tree");
         c.gridx = 1;
         c.gridy = 0;
         c.weighty = 0.0;
@@ -59,11 +82,11 @@ public class SubmissionPanel extends JPanel {
         setupLabel(2, 0, "Submissions:", c);
         MutableComboBoxModel<Submission> model = new DefaultComboBoxModel<>();
         submissions.setModel(model);
-        for (int k = 0; k < 100; k++) {
-            Submission submission = new Submission();
-            submission.setName("Version " + k);
-            submissions.addItem(submission);
-        }
+//        for (int k = 0; k < 100; k++) {
+//            Submission submission = new Submission();
+//            submission.setName("Version " + k);
+//            submissions.addItem(submission);
+//        }
         c.gridx = 3;
         c.weightx = 0.0;
         c.gridy = 0;
@@ -76,23 +99,6 @@ public class SubmissionPanel extends JPanel {
     private void setupProblemCondition(GridBagConstraints c) {
         problemCondition.setLineWrap(true);
         problemCondition.setWrapStyleWord(true);
-        problemCondition.setText("На столе в ряд выложены \uD835\uDC5B кубиков, каждый из которых покрашен в черный или белый цвет. Кубики пронумерованы слева направо, начиная с единицы.\n" +
-                "\n" +
-                "Вы можете ноль или более раз применить к последовательности кубиков следующую операцию: выбрать два соседних кубика и инвертировать их цвета (заменить белый на чёрный, и наоборот).\n" +
-                "\n" +
-                "Определите такую последовательность операций, что после их применения все кубики станут либо полностью белыми, либо полностью чёрными. Вам не нужно минимизировать количество операций, но их количество не должно превосходить 3⋅\uD835\uDC5B. Если невозможно сделать все кубики одноцветными, сообщите об этом.\n" +
-                "\n" +
-                "Входные данные\n" +
-                "В первой строке следует целое число \uD835\uDC5B (2≤\uD835\uDC5B≤200) — количество кубиков.\n" +
-                "\n" +
-                "Во второй строке следует строка \uD835\uDC60 длины \uD835\uDC5B, состоящая из символов «W» и «B». Если \uD835\uDC56-й символ строки равен «W», то \uD835\uDC56-й кубик изначально имеет белый цвет. Если \uD835\uDC56-й символ строки равен «B», то \uD835\uDC56-й кубик изначально имеет чёрный цвет.\n" +
-                "\n" +
-                "Выходные данные\n" +
-                "Если невозможно сделать все кубики одноцветными с помощью описанных операций, выведите −1.\n" +
-                "\n" +
-                "В противном случае, в первую строку выведите целое число \uD835\uDC58 (0≤\uD835\uDC58≤3⋅\uD835\uDC5B) — количество операций, которые нужно произвести. Во второй строке выведите \uD835\uDC58 целых чисел \uD835\uDC5D1,\uD835\uDC5D2,…,\uD835\uDC5D\uD835\uDC58 (1≤\uD835\uDC5D\uD835\uDC57≤\uD835\uDC5B−1), где \uD835\uDC5D\uD835\uDC57 равно позиции левого из двух соседних кубиков, у которых нужно инвертировать цвета во время \uD835\uDC57-й операции.\n" +
-                "\n" +
-                "Если ответов несколько, разрешается вывести любой из них.");
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 1;
@@ -104,7 +110,6 @@ public class SubmissionPanel extends JPanel {
 
     private void setupAuthor(GridBagConstraints c) {
         setupLabel(0, 2, "Author:", c);
-        author.setBody("Alex99999");
         c.gridx = 1;
         c.gridy = 2;
         c.weighty = 0.0;
@@ -117,9 +122,9 @@ public class SubmissionPanel extends JPanel {
         setupLabel(2, 2, "Language:", c);
         MutableComboBoxModel<String> model = new DefaultComboBoxModel<>();
         languages.setModel(model);
-        for (int k = 0; k < 100; k++) {
-            languages.addItem("Language " + k);
-        }
+//        for (int k = 0; k < 100; k++) {
+//            languages.addItem("Language " + k);
+//        }
         c.gridx = 3;
         c.weightx = 0.0;
         c.gridy = 2;
@@ -131,7 +136,6 @@ public class SubmissionPanel extends JPanel {
 
     private void setupTimeConsumed(GridBagConstraints c) {
         setupLabel(0, 3, "Time:", c);
-        timeConsumed.setBody("540 ms");
         c.gridx = 1;
         c.gridy = 3;
         c.weighty = 0.0;
@@ -142,7 +146,6 @@ public class SubmissionPanel extends JPanel {
 
     private void setupMemoryConsumed(GridBagConstraints c) {
         setupLabel(0, 4, "Memory:", c);
-        memoryConsumed.setBody("700 MB");
         c.gridx = 1;
         c.gridy = 4;
         c.weighty = 0.0;
@@ -167,6 +170,23 @@ public class SubmissionPanel extends JPanel {
         JButton testAndSubmit = new JButton("Test and Submit");
         JButton test = new JButton("Test");
 
+        test.addActionListener(a -> {
+            RunManager.getInstance(project).getAllConfigurationsList().forEach(System.out::println);
+            RunnerAndConfigurationSettings settings = RunManager.getInstance(project).getSelectedConfiguration();
+            if (settings != null) {
+//                ExecutionListener
+//                System.out.println(RunManager.getInstance(project).getSelectedConfiguration().getConfiguration());
+                ProgramRunner<RunnerSettings> runner = ProgramRunner.getRunner(DefaultRunExecutor.EXECUTOR_ID, settings.getConfiguration());
+                try {
+                    runner.execute(new ExecutionEnvironment(new DefaultRunExecutor(), runner, settings, project));
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+//            System.out.println(RunManager.getInstance(project).getSelectedConfiguration().getName());
+//            ProgramRunner.getRunner();
+        });
+
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonsPanel.add(testAndSubmit);
         buttonsPanel.add(test);
@@ -177,7 +197,7 @@ public class SubmissionPanel extends JPanel {
         setupLabel(2, 5, "File:", c);
         MutableComboBoxModel<String> model = new DefaultComboBoxModel<>();
         files.setModel(model);
-        files.addItem("main.cpp");
+//        files.addItem("main.cpp");
         c.gridx = 3;
         c.weightx = 0.0;
         c.gridy = 5;

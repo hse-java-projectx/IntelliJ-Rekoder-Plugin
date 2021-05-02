@@ -7,38 +7,28 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.ColoredSideBorder;
-import com.intellij.ui.JBColor;
-import com.intellij.ui.JBSplitter;
+import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.JBTextArea;
 import com.intellij.ui.treeStructure.Tree;
-import com.intellij.util.ui.HtmlPanel;
-import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.hse.plugin.data.Folder;
-import ru.hse.plugin.data.Team;
-import ru.hse.plugin.data.User;
-import ru.hse.plugin.managers.ProblemsTreeManager;
-import ru.hse.plugin.ui.renderers.MembersListRenderer;
+import ru.hse.plugin.data.*;
+import ru.hse.plugin.managers.BackendConnection;
 import ru.hse.plugin.ui.renderers.ProblemsTreeRenderer;
 import ru.hse.plugin.ui.renderers.TeamsListRenderer;
 import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.ExpandVetoException;
-import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 
 public class RekoderMainToolWindow extends SimpleToolWindowPanel implements DataProvider {
     private Tree problemsTree;
     private JBList<Object> teams;
-    private JBList<Object> members;
 
     private ProblemPanel problemPanel;
 
@@ -73,13 +63,11 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
 
     private JComponent setupExplorerPart() {
         DefaultListModel<Object> teamsModel = new DefaultListModel<>();
-        DefaultListModel<Object> membersModel = new DefaultListModel<>();
         teams = new JBList<>(teamsModel);
+        new ListSpeedSearch<>(teams);
         teams.setCellRenderer(new TeamsListRenderer());
         teams.setEmptyText("Teams");
-        members = new JBList<>(membersModel);
-        members.setCellRenderer(new MembersListRenderer());
-        members.setEmptyText("Members");
+        teams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         teams.addMouseListener(new MouseAdapter() {
             @Override
@@ -91,13 +79,15 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         }); // TODO: вынести в отдельный файл
 
         problemsTree = new Tree();
+        new TreeSpeedSearch(problemsTree);
         problemsTree.addTreeWillExpandListener(new TreeWillExpandListener() {
             @Override
-            public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+            public void treeWillExpand(TreeExpansionEvent event) {
                 Folder folder = (Folder) event.getPath().getLastPathComponent();
                 if (!folder.isLoaded()) {
                     folder.setLoaded();
-                    ProblemsTreeManager.loadFolder(folder);
+                    List<TreeFile> files = BackendConnection.loadFolder(folder.getName(), Credentials.getInstance());
+                    files.forEach(folder::add);
                 }
             }
 
@@ -113,11 +103,7 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         JBSplitter horizontalSplitter = new JBSplitter(false, 0.6f);
         horizontalSplitter.setFirstComponent(new JBScrollPane(problemsTree, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
-
-        JBSplitter verticalSplitter = new JBSplitter(true);
-        verticalSplitter.setFirstComponent(new JBScrollPane(teams, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
-        verticalSplitter.setSecondComponent(new JBScrollPane(members, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
-        horizontalSplitter.setSecondComponent(verticalSplitter);
+        horizontalSplitter.setSecondComponent(new JBScrollPane(teams, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
         return horizontalSplitter;
     }
@@ -128,8 +114,6 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
             return problemsTree;
         } else if (DataKeys.TEAMS_LIST.is(dataId)) {
             return teams;
-        } else if (DataKeys.MEMBERS_LIST.is(dataId)) {
-            return members;
         } else if (DataKeys.PROBLEM_PANEL.is(dataId)) {
             return problemPanel;
         }
