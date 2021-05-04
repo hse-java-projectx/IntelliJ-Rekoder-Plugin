@@ -51,6 +51,7 @@ public class Problem extends TreeFile {
     protected int numberOfAttempts = 0;
     protected String source = "";
     protected List<String> tags = Collections.emptyList();
+    protected boolean isLoaded = false;
 
     public Problem() {
 
@@ -62,6 +63,16 @@ public class Problem extends TreeFile {
         this.numberOfAttempts = numberOfAttempts;
         this.source = source;
         this.tags = tags;
+    }
+
+    public void loadFrom(Problem other) {
+        isLoaded = true;
+        name = other.name;
+        condition = other.condition;
+        state = other.state;
+        numberOfAttempts = other.numberOfAttempts;
+        source = other.source;
+        tags = other.tags;
     }
 
     public void setName(String name) {
@@ -110,6 +121,10 @@ public class Problem extends TreeFile {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isLoaded() {
+        return isLoaded;
     }
 
     @Override

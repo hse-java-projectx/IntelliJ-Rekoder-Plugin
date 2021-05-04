@@ -11,22 +11,20 @@ import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import org.intellij.lang.annotations.JdkConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.hse.plugin.data.*;
-import ru.hse.plugin.managers.BackendConnection;
+import ru.hse.plugin.ui.listeners.FolderClickListener;
+import ru.hse.plugin.ui.listeners.ProblemClickListener;
 import ru.hse.plugin.ui.renderers.ProblemsTreeRenderer;
 import ru.hse.plugin.ui.renderers.TeamsListRenderer;
 import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.event.*;
-import java.util.List;
 
-public class RekoderMainToolWindow extends SimpleToolWindowPanel implements DataProvider {
+public class RekoderExplorerToolWindow extends SimpleToolWindowPanel implements DataProvider {
     private Tree problemsTree;
     private JBList<Object> teams;
 
@@ -34,12 +32,12 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
 
     private final SimpleToolWindowPanel mainPanel = new SimpleToolWindowPanel(true, true);
 
-    public RekoderMainToolWindow(Project project, ToolWindow toolWindow) {
+    public RekoderExplorerToolWindow(Project project, ToolWindow toolWindow) {
         super(true, true);
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JComponent explorer = setupExplorerPart();
+        JComponent explorer = setupExplorerPart(project, toolWindow);
         problemPanel = new ProblemPanel(project, toolWindow);
 
         JBSplitter s1 = new JBSplitter(true, 0.3f);
@@ -61,7 +59,7 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
 //        super(true, true);
 //    }
 
-    private JComponent setupExplorerPart() {
+    private JComponent setupExplorerPart(Project project, ToolWindow toolWindow) {
         DefaultListModel<Object> teamsModel = new DefaultListModel<>();
         teams = new JBList<>(teamsModel);
         new ListSpeedSearch<>(teams);
@@ -79,23 +77,10 @@ public class RekoderMainToolWindow extends SimpleToolWindowPanel implements Data
         }); // TODO: вынести в отдельный файл
 
         problemsTree = new Tree();
+        problemsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(problemsTree);
-        problemsTree.addTreeWillExpandListener(new TreeWillExpandListener() {
-            @Override
-            public void treeWillExpand(TreeExpansionEvent event) {
-                Folder folder = (Folder) event.getPath().getLastPathComponent();
-                if (!folder.isLoaded()) {
-                    folder.setLoaded();
-                    List<TreeFile> files = BackendConnection.loadFolder(folder.getName(), Credentials.getInstance());
-                    files.forEach(folder::add);
-                }
-            }
-
-            @Override
-            public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
-
-            }
-        }); // TODO: вынести в отдельный файл
+        problemsTree.addTreeWillExpandListener(new FolderClickListener());
+        problemsTree.addTreeSelectionListener(new ProblemClickListener(project));
         problemsTree.setRootVisible(false);
         problemsTree.getEmptyText().clear().appendLine("Please Login to view problems");
         problemsTree.setCellRenderer(new ProblemsTreeRenderer());

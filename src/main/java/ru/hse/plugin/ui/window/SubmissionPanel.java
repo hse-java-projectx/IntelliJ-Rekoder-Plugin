@@ -20,9 +20,11 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
+import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.RunManager;
+import ru.hse.plugin.utils.ComponentUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,12 +35,15 @@ public class SubmissionPanel extends JPanel {
     private final JTextArea problemCondition = new JTextArea();
     private final HtmlPanel author = new SimpleHtmlPanel();
     private final ComboBox<String> languages = new ComboBox<>();
+    private final JLabel verdict = new JLabel();
     private final HtmlPanel timeConsumed = new SimpleHtmlPanel();
     private final HtmlPanel memoryConsumed = new SimpleHtmlPanel();
     private final ComboBox<String> files = new ComboBox<>();
 
     private final Project project;
     private final ToolWindow toolWindow;
+    private Submission submission;
+    private Problem problem;
 
     public SubmissionPanel(Project project, ToolWindow toolWindow) {
         super(new GridBagLayout());
@@ -49,6 +54,7 @@ public class SubmissionPanel extends JPanel {
         setupSubmissions(c);
         setupAuthor(c);
         setupLanguages(c);
+        setupVerdict(c);
         setupTimeConsumed(c);
         setupMemoryConsumed(c);
         setupFile(c);
@@ -57,15 +63,31 @@ public class SubmissionPanel extends JPanel {
         setupProblemCondition(c);
     }
 
+    public void setProblem(Problem problem) {
+        this.problem = problem;
+
+    }
+
+    private void setSubmission(Submission submission) {
+        this.submission = submission;
+        problemName.setBody(submission.getName());
+        problemCondition.setText(submission.getCondition());
+        author.setBody(submission.getAuthor());
+        verdict.setText(submission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
+        timeConsumed.setBody(submission.getTimeConsumed());
+        memoryConsumed.setBody(submission.getMemoryConsumed());
+    }
+
     public void clearSubmission() {
-        problemName.setBody("");
-        problemCondition.setText("");
-        author.setBody("");
-        timeConsumed.setBody("");
-        memoryConsumed.setBody("");
-        submissions.setModel(new DefaultComboBoxModel<>());
-        languages.setModel(new DefaultComboBoxModel<>());
-        files.setModel(new DefaultComboBoxModel<>());
+        ComponentUtils.clearComponent(problemName);
+        ComponentUtils.clearComponent(problemCondition);
+        ComponentUtils.clearComponent(author);
+        ComponentUtils.clearComponent(verdict);
+        ComponentUtils.clearComponent(timeConsumed);
+        ComponentUtils.clearComponent(memoryConsumed);
+        ComponentUtils.clearComponent(submissions);
+        ComponentUtils.clearComponent(languages);
+        ComponentUtils.clearComponent(files);
     }
 
     private void setupProblemName(GridBagConstraints c) {
@@ -134,10 +156,20 @@ public class SubmissionPanel extends JPanel {
         add(languages, c);
     }
 
-    private void setupTimeConsumed(GridBagConstraints c) {
-        setupLabel(0, 3, "Time:", c);
+    private void setupVerdict(GridBagConstraints c) {
+        setupLabel(0, 3, "Verdict:", c);
         c.gridx = 1;
         c.gridy = 3;
+        c.weighty = 0.0;
+        c.weightx = 1.0;
+        c.insets = JBUI.insets(5);
+        add(verdict, c);
+    }
+
+    private void setupTimeConsumed(GridBagConstraints c) {
+        setupLabel(0, 4, "Time:", c);
+        c.gridx = 1;
+        c.gridy = 4;
         c.weighty = 0.0;
         c.weightx = 1.0;
         c.insets = JBUI.insets(5);
@@ -145,9 +177,9 @@ public class SubmissionPanel extends JPanel {
     }
 
     private void setupMemoryConsumed(GridBagConstraints c) {
-        setupLabel(0, 4, "Memory:", c);
+        setupLabel(0, 5, "Memory:", c);
         c.gridx = 1;
-        c.gridy = 4;
+        c.gridy = 5;
         c.weighty = 0.0;
         c.weightx = 1.0;
         c.insets = JBUI.insets(5);
@@ -158,7 +190,7 @@ public class SubmissionPanel extends JPanel {
         JPanel buttonsPanel = setupButtonsPanel();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
-        c.gridy = 5;
+        c.gridy = 6;
         c.weighty = 0.0;
         c.weightx = 1.0;
         c.gridwidth = 2;
@@ -194,13 +226,13 @@ public class SubmissionPanel extends JPanel {
     }
 
     private void setupFile(GridBagConstraints c) {
-        setupLabel(2, 5, "File:", c);
+        setupLabel(2, 6, "File:", c);
         MutableComboBoxModel<String> model = new DefaultComboBoxModel<>();
         files.setModel(model);
 //        files.addItem("main.cpp");
         c.gridx = 3;
         c.weightx = 0.0;
-        c.gridy = 5;
+        c.gridy = 6;
         c.weighty = 0.0;
         c.anchor = GridBagConstraints.LINE_END;
 //        c.insets = JBUI.insets(5, 5, 5, 25);

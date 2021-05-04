@@ -15,10 +15,10 @@ import java.util.List;
 
 public class MainWindowManager {
     public static void updateProblemsTree(Project project) {
-        Tree tree = RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEMS_TREE);
+        Tree tree = getProblemsTree(project);
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
-        List<Folder> rootFolders = BackendConnection.getPersonalRootFolders(Credentials.getInstance());
+        List<Folder> rootFolders = BackendManager.getPersonalRootFolders(Credentials.getInstance());
         for (Folder folder : rootFolders) {
             root.add(folder);
         }
@@ -29,14 +29,14 @@ public class MainWindowManager {
     }
 
     public static void clearProblemsTree(Project project) {
-        Tree tree = RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEMS_TREE);
+        Tree tree = getProblemsTree(project);
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         model.setRoot(new DefaultMutableTreeNode("Root"));
     }
 
     public static void updateTeamsList(Project project) {
-        JBList<Object> teams = RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.TEAMS_LIST);
-        List<Team> teamsList = BackendConnection.getTeams(Credentials.getInstance());
+        JBList<Object> teams = getTeamsList(project);
+        List<Team> teamsList = BackendManager.getTeams(Credentials.getInstance());
         DefaultListModel<Object> model = new DefaultListModel<>();
         model.addElement(new User("Personal"));
         model.addAll(teamsList);
@@ -45,18 +45,30 @@ public class MainWindowManager {
     }
 
     public static void clearTeamsList(Project project) {
-        JBList<Object> teams = RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.TEAMS_LIST);
+        JBList<Object> teams = getTeamsList(project);
         DefaultListModel<Object> model = (DefaultListModel<Object>) teams.getModel();
         model.removeAllElements();
     }
 
     public static void updateProblemPanel(Project project, Problem problem) {
-        ProblemPanel problemPanel = RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEM_PANEL);
+        ProblemPanel problemPanel = getProblemPanel(project);
         problemPanel.setProblem(problem);
     }
 
     public static void clearProblemPanel(Project project) {
-        ProblemPanel problemPanel = RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEM_PANEL);
+        ProblemPanel problemPanel = getProblemPanel(project);
         problemPanel.clearProblem();
+    }
+
+    private static ProblemPanel getProblemPanel(Project project) {
+        return RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEM_PANEL);
+    }
+
+    private static JBList<Object> getTeamsList(Project project) {
+        return RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.TEAMS_LIST);
+    }
+
+    private static Tree getProblemsTree(Project project) {
+        return RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEMS_TREE);
     }
 }

@@ -7,8 +7,10 @@ import com.intellij.vcsUtil.AuthDialog;
 import org.jetbrains.annotations.NotNull;
 
 import ru.hse.plugin.data.Credentials;
-import ru.hse.plugin.managers.BackendConnection;
+import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.managers.MainWindowManager;
+import ru.hse.plugin.managers.ProblemWindowManager;
+import ru.hse.plugin.utils.NotificationUtils;
 
 
 public class LoginAction extends AnAction {
@@ -19,11 +21,9 @@ public class LoginAction extends AnAction {
         if (!dialog.showAndGet()) {
             return;
         }
-        String token = BackendConnection.login(dialog.getUsername(), dialog.getPassword());
+        String token = BackendManager.login(dialog.getUsername(), dialog.getPassword());
         if (token == null) { // TODO: заново выводить окно
-//            Notification notification = new Notification(MyNotifier.NOTIFICATION_GROUP.getDisplayId(), "Login", "Login failed", NotificationType.ERROR);
-            Notification notification = NotificationGroup.toolWindowGroup("rekoder", "rekoderWindow").createNotification("Login failed", NotificationType.ERROR);
-            Notifications.Bus.notify(notification, e.getProject());
+            NotificationUtils.showToolWindowMessage("Login failed", NotificationType.ERROR, e.getProject());
             return;
         }
         credentials.setLogin(dialog.getUsername());
@@ -32,5 +32,7 @@ public class LoginAction extends AnAction {
         MainWindowManager.updateProblemsTree(e.getProject());
         MainWindowManager.updateTeamsList(e.getProject());
         MainWindowManager.clearProblemPanel(e.getProject());
+        ProblemWindowManager.clearSubmission(e.getProject());
+        ProblemWindowManager.clearTests(e.getProject());
     }
 }

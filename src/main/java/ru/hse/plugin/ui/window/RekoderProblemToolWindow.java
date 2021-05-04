@@ -21,22 +21,33 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-public class RekoderProblemWindow extends SimpleToolWindowPanel implements DataProvider {
+public class RekoderProblemToolWindow extends SimpleToolWindowPanel implements DataProvider {
 
     private final SimpleToolWindowPanel mainPanel = new SimpleToolWindowPanel(true, true);
 
     private final SubmissionPanel submissionPanel;
+    private final TestsPanel testsPanel;
 
-    RekoderProblemWindow(Project project, ToolWindow toolWindow) {
+    RekoderProblemToolWindow(Project project, ToolWindow toolWindow) {
         super(true, true);
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         submissionPanel = setupProblemInfoPart(project, toolWindow);
-        JComponent tests = setupTestsPart();
+        testsPanel = setupTestsPart();
+        JBScrollPane scrollPane = new JBScrollPane(testsPanel, JBScrollPane.VERTICAL_SCROLLBAR_NEVER, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        MouseWheelListener listener = scrollPane.getMouseWheelListeners()[0];
+        scrollPane.addMouseWheelListener(e -> {
+            MouseWheelEvent event = new MouseWheelEvent(e.getComponent(), e.getID(), e.getWhen(),
+                    e.getModifiersEx() | InputEvent.SHIFT_DOWN_MASK,
+                    e.getX(), e.getY(),
+                    e.getClickCount(), e.isPopupTrigger(), e.getScrollType(), e.getScrollAmount(), e.getWheelRotation());
+            listener.mouseWheelMoved(event);
+        });
+
         JBSplitter s1 = new JBSplitter(true, 0.7f);
         s1.setFirstComponent(submissionPanel);
-        s1.setSecondComponent(tests);
+        s1.setSecondComponent(testsPanel);
 
         panel.add(s1);
         mainPanel.setContent(panel);
@@ -53,43 +64,16 @@ public class RekoderProblemWindow extends SimpleToolWindowPanel implements DataP
         return new SubmissionPanel(project, toolWindow);
     }
 
-    JComponent setupTestsPart() {
-        JPanel tests = new JPanel() {
-            @Override
-            public Dimension getPreferredSize() {
-                Dimension dimension = super.getPreferredSize();
-                dimension.height = 100;
-                return dimension;
-            }
-        };
-        tests.setLayout(new BoxLayout(tests, BoxLayout.X_AXIS));
-        for (int k = 0; k < 100; k++) {
-            tests.add(new TestPanel(tests).getComponent());
-//            JButton button = new JButton("Test" + k);
-//            button.addActionListener(a -> {
-//                tests.remove(button);
-//                tests.updateUI();
-//            });
-//            tests.add(button, 0);
-        }
-
-        JBScrollPane scrollPane = new JBScrollPane(tests, JBScrollPane.VERTICAL_SCROLLBAR_NEVER, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        MouseWheelListener listener = scrollPane.getMouseWheelListeners()[0];
-        scrollPane.addMouseWheelListener(e -> {
-
-            MouseWheelEvent event = new MouseWheelEvent(e.getComponent(), e.getID(), e.getWhen(),
-                    e.getModifiersEx() | InputEvent.SHIFT_DOWN_MASK,
-                    e.getX(), e.getY(),
-                    e.getClickCount(), e.isPopupTrigger(), e.getScrollType(), e.getScrollAmount(), e.getWheelRotation());
-            listener.mouseWheelMoved(event);
-        });
-        return scrollPane;
+    TestsPanel setupTestsPart() {
+        return new TestsPanel();
     }
 
     @Override
     public @Nullable Object getData(@NotNull String dataId) {
         if (DataKeys.SUBMISSION_PANEL.is(dataId)) {
             return submissionPanel;
+        } else if (DataKeys.TESTS_PANEL.is(dataId)) {
+            return testsPanel;
         }
         return super.getData(dataId);
     }

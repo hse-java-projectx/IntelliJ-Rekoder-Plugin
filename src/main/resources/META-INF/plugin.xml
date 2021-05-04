@@ -11,7 +11,7 @@
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="rekoderWindow" secondary="true" anchor="right"
+        <toolWindow id="rekoder" secondary="true" anchor="right"
         factoryClass="ru.hse.plugin.ui.window.RekoderToolWindowFactory"
         canCloseContents="true"/>
 

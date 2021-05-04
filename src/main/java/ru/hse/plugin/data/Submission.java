@@ -2,6 +2,8 @@ package ru.hse.plugin.data;
 
 public class Submission {
     private String name;
+    private String condition;
+    private String author;
     private String sourceCode;
     private String compiler;
     private String verdict;
@@ -54,6 +56,22 @@ public class Submission {
 
     public void setMemoryConsumed(String memoryConsumed) {
         this.memoryConsumed = memoryConsumed;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     @Override

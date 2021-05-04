@@ -15,6 +15,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Problem;
+import ru.hse.plugin.utils.ComponentUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,11 +43,11 @@ public class ProblemPanel extends JPanel {
 
     public void clearProblem() {
         this.problem = null;
-        problemName.setBody("");
-        problemState.setText("");
-        numberOfAttempts.setText("");
-        problemCondition.setText("");
-        problemSource.setBody("");
+        ComponentUtils.clearComponent(problemName);
+        ComponentUtils.clearComponent(problemState);
+        ComponentUtils.clearComponent(numberOfAttempts);
+        ComponentUtils.clearComponent(problemCondition);
+        ComponentUtils.clearComponent(problemSource);
         tagsPanel.removeAll();
     }
 

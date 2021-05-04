@@ -8,24 +8,22 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManager;
-import com.intellij.ui.content.ContentManagerListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
 public class RekoderToolWindowFactory implements ToolWindowFactory {
-    private static final String MAIN_WINDOW_ID = "rekoderWindow";
+    public static final String MAIN_WINDOW_ID = "rekoder";
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        RekoderMainToolWindow mainToolWindow = new RekoderMainToolWindow(project, toolWindow);
+        RekoderExplorerToolWindow mainToolWindow = new RekoderExplorerToolWindow(project, toolWindow);
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         Content content = contentFactory.createContent(mainToolWindow, "Explorer", false);
         content.setCloseable(false);
         toolWindow.getContentManager().addContent(content);
 
-        RekoderProblemWindow problemToolWindow = new RekoderProblemWindow(project, toolWindow);
+        RekoderProblemToolWindow problemToolWindow = new RekoderProblemToolWindow(project, toolWindow);
         Content content1 = contentFactory.createContent(problemToolWindow, "Problem", false);
         content1.setCloseable(false);
         toolWindow.getContentManager().addContent(content1);

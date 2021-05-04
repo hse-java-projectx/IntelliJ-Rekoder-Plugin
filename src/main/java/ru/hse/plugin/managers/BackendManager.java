@@ -5,7 +5,7 @@ import ru.hse.plugin.data.*;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class BackendConnection {
+public class BackendManager {
 
     // returns token
     @Nullable
@@ -61,13 +61,22 @@ public class BackendConnection {
 
     public static Problem loadProblem(String problemId, Credentials credentials) {
         Problem problem = new Problem();
-        problem.setName(getRandomString(10));
+        problem.setName(problemId);
         problem.setCondition(getRandomString(300));
         problem.setSource(getRandomString(15));
         problem.setState(Problem.State.values()[rnd.nextInt(3)]);
         problem.setNumberOfAttempts(rnd.nextInt(1000));
         problem.setTags(Arrays.asList(getRandomString(4), getRandomString(7)));
         return problem;
+    }
+
+    public static List<String> getProblemCompilers(Problem problem, Credentials credentials) {
+        return Arrays.asList("gcc", "g++", "clang");
+    }
+
+    public static List<Submission> getProblemSubmissions(Problem problem, Credentials credentials) {
+        // or maybe List<String> where String = id of submission
+        return Collections.emptyList();
     }
 
     private static final Random rnd = new Random();
@@ -79,5 +88,4 @@ public class BackendConnection {
         }
         return String.valueOf(buffer);
     }
-
 }
