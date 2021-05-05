@@ -14,7 +14,7 @@ public class LogoutAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Credentials credentials = Credentials.getInstance();
-        if (credentials.getToken() == null) {
+        if (isNotLoggedIn(credentials)) {
             NotificationUtils.showToolWindowMessage("You are not logged in", NotificationType.WARNING, e.getProject());
             return;
         }
@@ -25,5 +25,9 @@ public class LogoutAction extends AnAction {
         ProblemWindowManager.clearTests(e.getProject());
         credentials.setToken(null);
         NotificationUtils.showToolWindowMessage("Logged out successfully", NotificationType.INFORMATION, e.getProject());
+    }
+
+    private boolean isNotLoggedIn(Credentials credentials) {
+        return credentials.getToken() == null;
     }
 }

@@ -1,9 +1,10 @@
 package ru.hse.plugin.ui.window;
 
+import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.fileTypes.FileTypeRegistry;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
@@ -15,6 +16,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Problem;
+import ru.hse.plugin.data.Submission;
 import ru.hse.plugin.utils.ComponentUtils;
 
 import javax.swing.*;
@@ -28,6 +30,8 @@ public class ProblemPanel extends JPanel {
     private final HtmlPanel problemSource = new SimpleHtmlPanel();
     private final JPanel tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     private Problem problem;
+    private final JButton startSolving = new JButton("Start solving");
+    private final JButton previewCode = new JButton("Preview code");
 
     public void setProblem(Problem problem) {
         this.problem = problem;
@@ -39,6 +43,8 @@ public class ProblemPanel extends JPanel {
         problemSource.setBody(problem.getSource());
         tagsPanel.removeAll();
         problem.getTags().forEach(t -> tagsPanel.add(new JLabel(t)));
+        startSolving.setEnabled(true);
+        previewCode.setEnabled(!problem.getSubmissions().isEmpty());
     }
 
     public void clearProblem() {
@@ -49,6 +55,8 @@ public class ProblemPanel extends JPanel {
         ComponentUtils.clearComponent(problemCondition);
         ComponentUtils.clearComponent(problemSource);
         tagsPanel.removeAll();
+        startSolving.setEnabled(false);
+        previewCode.setEnabled(false);
     }
 
     public ProblemPanel(Project project, ToolWindow toolWindow) {
@@ -143,7 +151,6 @@ public class ProblemPanel extends JPanel {
 
     private JPanel setupButtonsPanel(Project project, ToolWindow toolWindow) {
         // Buttons
-        JButton startSolving = new JButton("Start solving");
         startSolving.addActionListener(a -> {
             ContentManager contentManager = toolWindow.getContentManager();
             contentManager.setSelectedContent(contentManager.getContent(1));
@@ -153,22 +160,14 @@ public class ProblemPanel extends JPanel {
 //        System.out.println(FileTypeRegistry.getInstance().findFileTypeByName("C++"));
 //        Language l = Language.findLanguageByID("");
 //        System.out.println(l);
-
-        JButton previewCode = new JButton("Preview code");
         previewCode.addActionListener(a -> {
+            Problem problem = getProblem();
+            Submission lastSubmission = problem.getSubmissions().get(0);
             ContentManager contentManager = toolWindow.getContentManager();
             ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-            String text = "f :: Num a => a -> a -> a\n" +
-                    "f x y = x*x + y*y\n" +
-                    "\n" +
-                    "x :: Int\n" +
-                    "x = 3\n" +
-                    "y :: Float\n" +
-                    "y = 2.4\n" +
-                    "main = print (f x y) -- не будет работать, поскольку тип x ≠ типу y";
-            Document document = EditorFactory.getInstance().createDocument(text);
+            Document document = EditorFactory.getInstance().createDocument(lastSubmission.getSourceCode());
 //            Editor editor = EditorFactory.getInstance().createEditor(document, project, JavaFileType.INSTANCE, true);
-            Editor editor = EditorFactory.getInstance().createEditor(document, project, FileTypeRegistry.getInstance().findFileTypeByName("Haskell"), true);
+            Editor editor = EditorFactory.getInstance().createEditor(document, project, getFileTypeByCompiler(lastSubmission.getCompiler()), true);
             Content codeContent = contentFactory.createContent(new JBScrollPane(editor.getComponent()), "Code", false);
             Disposer.register(codeContent, () -> {
                 EditorFactory.getInstance().releaseEditor(editor);
@@ -180,11 +179,19 @@ public class ProblemPanel extends JPanel {
         });
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-//        startSolving.setEnabled(false);
-//        previewCode.setEnabled(false);
+        startSolving.setEnabled(false);
+        previewCode.setEnabled(false);
         buttonsPanel.add(startSolving);
         buttonsPanel.add(previewCode);
         return buttonsPanel;
+    }
+
+    private FileType getFileTypeByCompiler(String compiler) { // TODO: вынести в Utils
+        return JavaFileType.INSTANCE;
+    }
+
+    private Problem getProblem() {
+        return problem;
     }
 
     private void setupLabel(int x, int y, String name, GridBagConstraints c) {

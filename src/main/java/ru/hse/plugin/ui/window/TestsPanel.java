@@ -10,30 +10,64 @@ import ru.hse.plugin.data.TestImpl;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TestsPanel extends JPanel {
+    private final JPanel testsPanel = new JPanel();
+
     public TestsPanel() {
+        testsPanel.setLayout(new BoxLayout(testsPanel, BoxLayout.X_AXIS));
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setName("Tests");
+
+        JButton newTestButton = new JButton("+") {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                int s = (int)(Math.min(d.getWidth(), d.getHeight()));
+                return new Dimension (s,s);
+            }
+        };
+        newTestButton.addActionListener(e -> {
+            testsPanel.add(new TestPanel(testsPanel, "", ""), 0);
+            testsPanel.updateUI();
+        });
+
+
+
         for (int k = 0; k < 3; k++) {
-            setTests(Arrays.asList(new TestImpl("", ""), new TestImpl("", ""), new TestImpl("", "")));
+            this.setTests(Arrays.asList(new TestImpl("", ""), new TestImpl("", ""), new TestImpl("", "")));
         }
+
+        JBScrollPane scrollPane = new JBScrollPane(testsPanel, JBScrollPane.VERTICAL_SCROLLBAR_NEVER, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        MouseWheelListener listener = scrollPane.getMouseWheelListeners()[0];
+        scrollPane.addMouseWheelListener(e -> {
+            MouseWheelEvent event = new MouseWheelEvent(e.getComponent(), e.getID(), e.getWhen(),
+                    e.getModifiersEx() | InputEvent.SHIFT_DOWN_MASK,
+                    e.getX(), e.getY(),
+                    e.getClickCount(), e.isPopupTrigger(), e.getScrollType(), e.getScrollAmount(), e.getWheelRotation());
+            listener.mouseWheelMoved(event);
+        });
+
+        add(newTestButton);
+        add(scrollPane);
     }
 
     public void setTests(List<? extends Test> tests) {
-        this.removeAll();
-        tests.forEach(test -> this.add(new TestPanel(this, test.getInput(), test.getOutput())));
+        testsPanel.removeAll();
+        tests.forEach(test -> testsPanel.add(new TestPanel(testsPanel, test.getInput(), test.getOutput())));
     }
 
     public List<Test> getTests() {
-        return Arrays.stream(this.getComponents()).
-                map(c -> {
-                    TestPanel testPanel = (TestPanel) c;
-                    return new TestImpl(testPanel.getInput(), testPanel.getOutput());
-                }).collect(Collectors.toList());
+        return Arrays.stream(testsPanel.getComponents()).
+                map(c -> (TestPanel) c).
+//                filter(t -> !t.getInput().isEmpty() && !t.getOutput().isEmpty()).
+                collect(Collectors.toList());
     }
 
     public void clearTests() {
@@ -67,7 +101,12 @@ public class TestsPanel extends JPanel {
             s3.setFirstComponent(label);
             s3.setSecondComponent(button);
             button.addActionListener(a -> {
-                JBPopupFactory.getInstance().createConfirmation("Sure?", "Yes", "No", () -> {parent.remove(this); parent.updateUI();}, 0).showInCenterOf(s3);
+                if (getInput().isEmpty() && getOutput().isEmpty()) {
+                    parent.remove(this);
+                    parent.updateUI();
+                } else {
+                    JBPopupFactory.getInstance().createConfirmation("Sure?", "Yes", "No", () -> {parent.remove(this); parent.updateUI();}, 0).showInCenterOf(s3);
+                }
             }); // TODO: вынести в отдельный файл
 
             s1.setFirstComponent(new JBScrollPane(inputArea, JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));

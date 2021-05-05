@@ -35,15 +35,6 @@ public class RekoderProblemToolWindow extends SimpleToolWindowPanel implements D
 
         submissionPanel = setupProblemInfoPart(project, toolWindow);
         testsPanel = setupTestsPart();
-        JBScrollPane scrollPane = new JBScrollPane(testsPanel, JBScrollPane.VERTICAL_SCROLLBAR_NEVER, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        MouseWheelListener listener = scrollPane.getMouseWheelListeners()[0];
-        scrollPane.addMouseWheelListener(e -> {
-            MouseWheelEvent event = new MouseWheelEvent(e.getComponent(), e.getID(), e.getWhen(),
-                    e.getModifiersEx() | InputEvent.SHIFT_DOWN_MASK,
-                    e.getX(), e.getY(),
-                    e.getClickCount(), e.isPopupTrigger(), e.getScrollType(), e.getScrollAmount(), e.getWheelRotation());
-            listener.mouseWheelMoved(event);
-        });
 
         JBSplitter s1 = new JBSplitter(true, 0.7f);
         s1.setFirstComponent(submissionPanel);

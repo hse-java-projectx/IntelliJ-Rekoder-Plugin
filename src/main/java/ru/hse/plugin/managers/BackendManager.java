@@ -67,6 +67,15 @@ public class BackendManager {
         problem.setState(Problem.State.values()[rnd.nextInt(3)]);
         problem.setNumberOfAttempts(rnd.nextInt(1000));
         problem.setTags(Arrays.asList(getRandomString(4), getRandomString(7)));
+        if (rnd.nextBoolean()) {
+            problem.setSubmissions(Collections.emptyList());
+        } else {
+            Submission submission = new Submission();
+            submission.setSourceCode("public static List<String> getProblemCompilers(Problem problem, Credentials credentials) {\n" +
+                    "        return Arrays.asList(\"gcc\", \"g++\", \"clang\");\n" +
+                    "    }");
+            problem.setSubmissions(Collections.singletonList(submission));
+        }
         return problem;
     }
 

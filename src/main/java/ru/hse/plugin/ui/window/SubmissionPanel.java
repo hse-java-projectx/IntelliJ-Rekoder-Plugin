@@ -1,10 +1,11 @@
 package ru.hse.plugin.ui.window;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionListener;
-import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.*;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -23,7 +24,6 @@ import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import com.intellij.execution.runners.ProgramRunner;
-import com.intellij.execution.RunManager;
 import ru.hse.plugin.utils.ComponentUtils;
 
 import javax.swing.*;
