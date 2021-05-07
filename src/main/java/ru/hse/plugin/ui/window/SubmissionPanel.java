@@ -99,7 +99,7 @@ public class SubmissionPanel extends JPanel {
         verdict.setText(submission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
         timeConsumed.setBody(submission.getTimeConsumed());
         memoryConsumed.setBody(submission.getMemoryConsumed());
-        testsPanel.setTests(submission.getTests());
+        testsPanel.setTests(submission.getTests(), !submission.isSent());
         testAndSubmit.setEnabled(!submission.isSent());
         test.setEnabled(true);
         reloadSubmission.setEnabled(submission.isSent());
@@ -147,6 +147,9 @@ public class SubmissionPanel extends JPanel {
         submissions.setModel(new DefaultComboBoxModel<>());
         submissions.addItemListener(e -> {
             Submission submission = (Submission) e.getItem();
+            if (!this.submission.isSent()) {
+                this.submission.setTests(testsPanel.getTests());
+            }
             setSubmission(submission);
         });
         c.gridx = 3;

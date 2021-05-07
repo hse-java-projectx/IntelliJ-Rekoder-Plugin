@@ -19,9 +19,9 @@ public class ProblemManager {
         getTestsPanel(project).clearTests();
     }
 
-    public static void setTests(Project project, List<? extends Test> tests) {
+    public static void setTests(Project project, List<? extends Test> tests, boolean canChangeTests) {
         TestsPanel testsPanel = getTestsPanel(project);
-        testsPanel.setTests(tests);
+        testsPanel.setTests(tests, canChangeTests);
     }
 
     public static void clearProblem(Project project) {

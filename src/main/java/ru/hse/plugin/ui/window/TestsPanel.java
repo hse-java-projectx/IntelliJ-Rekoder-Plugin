@@ -35,15 +35,9 @@ public class TestsPanel extends JPanel {
 
         newTestButton.setEnabled(false);
         newTestButton.addActionListener(e -> {
-            testsPanel.add(new TestPanel(testsPanel, "", ""), 0);
+            testsPanel.add(new TestPanel(testsPanel, "", "", true), 0);
             testsPanel.updateUI();
         });
-
-
-
-        for (int k = 0; k < 3; k++) {
-            this.setTests(Arrays.asList(new TestImpl("", ""), new TestImpl("", ""), new TestImpl("", "")));
-        }
 
         JBScrollPane scrollPane = new JBScrollPane(testsPanel, JBScrollPane.VERTICAL_SCROLLBAR_NEVER, JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         MouseWheelListener listener = scrollPane.getMouseWheelListeners()[0];
@@ -59,11 +53,11 @@ public class TestsPanel extends JPanel {
         add(scrollPane);
     }
 
-    public void setTests(List<? extends Test> tests) {
+    public void setTests(List<? extends Test> tests, boolean canChangeTests) {
         testsPanel.removeAll();
-        tests.forEach(test -> testsPanel.add(new TestPanel(testsPanel, test.getInput(), test.getOutput())));
+        tests.forEach(test -> testsPanel.add(new TestPanel(testsPanel, test.getInput(), test.getOutput(), canChangeTests)));
         testsPanel.updateUI();
-        newTestButton.setEnabled(true);
+        newTestButton.setEnabled(canChangeTests);
     }
 
     public List<Test> getTests() {
@@ -83,7 +77,7 @@ public class TestsPanel extends JPanel {
         private final JBTextArea outputArea;
         private JButton button;
 
-        public TestPanel(JPanel parent, String input, String output) {
+        public TestPanel(JPanel parent, String input, String output, boolean canChangeTest) {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
             setPreferredSize(new Dimension(150, 150));
@@ -97,6 +91,7 @@ public class TestsPanel extends JPanel {
             outputArea = new JBTextArea(output);
 //        outputArea.setMinimumSize(new Dimension(200, 50));
             button = new JButton("Delete");
+            button.setEnabled(canChangeTest);
             JBSplitter s3 = new JBSplitter(false);
             s3.setResizeEnabled(false);
             JLabel label = new JLabel("Passed");
