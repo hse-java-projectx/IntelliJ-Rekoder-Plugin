@@ -13,6 +13,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
@@ -33,8 +34,8 @@ public class RekoderProblemToolWindow extends SimpleToolWindowPanel implements D
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        submissionPanel = setupProblemInfoPart(project, toolWindow);
         testsPanel = setupTestsPart();
+        submissionPanel = setupProblemInfoPart(project, toolWindow, testsPanel);
 
         JBSplitter s1 = new JBSplitter(true, 0.7f);
         s1.setFirstComponent(submissionPanel);
@@ -51,11 +52,15 @@ public class RekoderProblemToolWindow extends SimpleToolWindowPanel implements D
         setContent(mainPanel);
     }
 
-    SubmissionPanel setupProblemInfoPart(Project project, ToolWindow toolWindow) {
-        return new SubmissionPanel(project, toolWindow);
+    public void setProblem(Problem problem) {
+        submissionPanel.setProblem(problem);
     }
 
-    TestsPanel setupTestsPart() {
+    private SubmissionPanel setupProblemInfoPart(Project project, ToolWindow toolWindow, TestsPanel testsPanel) {
+        return new SubmissionPanel(project, toolWindow, testsPanel);
+    }
+
+    private TestsPanel setupTestsPart() {
         return new TestsPanel();
     }
 

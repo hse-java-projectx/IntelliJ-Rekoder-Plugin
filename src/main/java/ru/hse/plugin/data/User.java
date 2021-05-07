@@ -1,8 +1,6 @@
 package ru.hse.plugin.data;
 
-import javax.swing.*;
-
-public class User {
+public class User extends ContentHolder {
     private final String name;
 
     public User(String name) {

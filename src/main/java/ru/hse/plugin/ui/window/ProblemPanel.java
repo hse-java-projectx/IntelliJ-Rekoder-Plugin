@@ -17,6 +17,7 @@ import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
+import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.utils.ComponentUtils;
 
 import javax.swing.*;
@@ -111,6 +112,7 @@ public class ProblemPanel extends JPanel {
 
         problemCondition.setLineWrap(true);
         problemCondition.setWrapStyleWord(true);
+        problemCondition.setEditable(false);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 2;
@@ -152,6 +154,7 @@ public class ProblemPanel extends JPanel {
     private JPanel setupButtonsPanel(Project project, ToolWindow toolWindow) {
         // Buttons
         startSolving.addActionListener(a -> {
+            ProblemManager.setProblem(project, getProblem());
             ContentManager contentManager = toolWindow.getContentManager();
             contentManager.setSelectedContent(contentManager.getContent(1));
         });

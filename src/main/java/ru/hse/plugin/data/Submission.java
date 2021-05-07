@@ -1,14 +1,18 @@
 package ru.hse.plugin.data;
 
+import java.util.Collections;
+import java.util.List;
+
 public class Submission {
-    private String name;
-    private String condition;
-    private String author;
-    private String sourceCode;
-    private String compiler;
-    private String verdict;
-    private String timeConsumed;
-    private String memoryConsumed;
+    private String name = "";
+    private String author = "";
+    private String sourceCode = "";
+    private String compiler = "";
+    private String verdict = "";
+    private String timeConsumed = "";
+    private String memoryConsumed = "";
+    private List<Test> tests = Collections.emptyList();
+    private boolean isSent = false;
 
     public String getName() {
         return name;
@@ -58,20 +62,28 @@ public class Submission {
         this.memoryConsumed = memoryConsumed;
     }
 
-    public String getCondition() {
-        return condition;
-    }
-
-    public void setCondition(String condition) {
-        this.condition = condition;
-    }
-
     public String getAuthor() {
         return author;
     }
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public List<Test> getTests() {
+        return tests;
+    }
+
+    public void setTests(List<Test> tests) {
+        this.tests = tests;
+    }
+
+    public boolean isSent() {
+        return isSent;
+    }
+
+    public void setSent(boolean sent) {
+        isSent = sent;
     }
 
     @Override

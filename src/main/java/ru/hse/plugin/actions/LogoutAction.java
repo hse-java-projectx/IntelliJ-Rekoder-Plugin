@@ -5,8 +5,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
-import ru.hse.plugin.managers.MainWindowManager;
-import ru.hse.plugin.managers.ProblemWindowManager;
+import ru.hse.plugin.managers.ExplorerManager;
+import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.utils.NotificationUtils;
 
 public class LogoutAction extends AnAction {
@@ -18,11 +18,11 @@ public class LogoutAction extends AnAction {
             NotificationUtils.showToolWindowMessage("You are not logged in", NotificationType.WARNING, e.getProject());
             return;
         }
-        MainWindowManager.clearProblemsTree(e.getProject());
-        MainWindowManager.clearTeamsList(e.getProject());
-        MainWindowManager.clearProblemPanel(e.getProject());
-        ProblemWindowManager.clearSubmission(e.getProject());
-        ProblemWindowManager.clearTests(e.getProject());
+        ExplorerManager.clearProblemsTree(e.getProject());
+        ExplorerManager.clearTeamsList(e.getProject());
+        ExplorerManager.clearProblemPanel(e.getProject());
+        ProblemManager.clearProblem(e.getProject());
+        ProblemManager.clearTests(e.getProject());
         credentials.setToken(null);
         NotificationUtils.showToolWindowMessage("Logged out successfully", NotificationType.INFORMATION, e.getProject());
     }

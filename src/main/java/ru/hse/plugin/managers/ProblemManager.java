@@ -1,6 +1,7 @@
 package ru.hse.plugin.managers;
 
 import com.intellij.openapi.project.Project;
+import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Test;
 import ru.hse.plugin.ui.window.RekoderToolWindowFactory;
 import ru.hse.plugin.ui.window.SubmissionPanel;
@@ -9,7 +10,7 @@ import ru.hse.plugin.utils.DataKeys;
 
 import java.util.List;
 
-public class ProblemWindowManager {
+public class ProblemManager {
     public static List<Test> getTests(Project project) {
         return getTestsPanel(project).getTests();
     }
@@ -23,11 +24,13 @@ public class ProblemWindowManager {
         testsPanel.setTests(tests);
     }
 
-    public static void clearSubmission(Project project) {
-        getSubmissionPanel(project).clearSubmission();
+    public static void clearProblem(Project project) {
+        getSubmissionPanel(project).clearProblem();
     }
 
-
+    public static void setProblem(Project project, Problem problem) {
+        getSubmissionPanel(project).setProblem(problem);
+    }
 
 
 

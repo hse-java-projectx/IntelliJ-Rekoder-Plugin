@@ -8,8 +8,8 @@ import org.jetbrains.annotations.NotNull;
 
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.managers.BackendManager;
-import ru.hse.plugin.managers.MainWindowManager;
-import ru.hse.plugin.managers.ProblemWindowManager;
+import ru.hse.plugin.managers.ExplorerManager;
+import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.utils.NotificationUtils;
 
 
@@ -36,11 +36,10 @@ public class LoginAction extends AnAction {
             credentials.setLogin(dialog.getUsername());
             credentials.setToken(dialog.getPassword());
 
-            MainWindowManager.updateProblemsTree(e.getProject());
-            MainWindowManager.updateTeamsList(e.getProject());
-            MainWindowManager.clearProblemPanel(e.getProject());
-            ProblemWindowManager.clearSubmission(e.getProject());
-            ProblemWindowManager.clearTests(e.getProject());
+            ExplorerManager.updateTeamsList(e.getProject());
+            ExplorerManager.clearProblemPanel(e.getProject());
+            ProblemManager.clearProblem(e.getProject());
+            ProblemManager.clearTests(e.getProject());
             return;
         }
     }

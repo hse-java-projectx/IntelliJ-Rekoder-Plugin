@@ -19,20 +19,21 @@ import java.util.stream.Collectors;
 
 public class TestsPanel extends JPanel {
     private final JPanel testsPanel = new JPanel();
+    private final JButton newTestButton = new JButton("+") {
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension d = super.getPreferredSize();
+            int s = (int)(Math.min(d.getWidth(), d.getHeight()));
+            return new Dimension (s,s);
+        }
+    };
 
     public TestsPanel() {
         testsPanel.setLayout(new BoxLayout(testsPanel, BoxLayout.X_AXIS));
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setName("Tests");
 
-        JButton newTestButton = new JButton("+") {
-            @Override
-            public Dimension getPreferredSize() {
-                Dimension d = super.getPreferredSize();
-                int s = (int)(Math.min(d.getWidth(), d.getHeight()));
-                return new Dimension (s,s);
-            }
-        };
+        newTestButton.setEnabled(false);
         newTestButton.addActionListener(e -> {
             testsPanel.add(new TestPanel(testsPanel, "", ""), 0);
             testsPanel.updateUI();
@@ -61,6 +62,8 @@ public class TestsPanel extends JPanel {
     public void setTests(List<? extends Test> tests) {
         testsPanel.removeAll();
         tests.forEach(test -> testsPanel.add(new TestPanel(testsPanel, test.getInput(), test.getOutput())));
+        testsPanel.updateUI();
+        newTestButton.setEnabled(true);
     }
 
     public List<Test> getTests() {
@@ -71,7 +74,8 @@ public class TestsPanel extends JPanel {
     }
 
     public void clearTests() {
-        this.removeAll();
+        testsPanel.removeAll();
+        newTestButton.setEnabled(true);
     }
 
     private static class TestPanel extends JPanel implements Test {

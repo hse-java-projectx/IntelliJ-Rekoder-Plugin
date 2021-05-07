@@ -7,44 +7,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class Problem extends TreeFile {
-    public enum State {
-        PASSED {
-            @Override
-            public String toString() {
-                return "Passed";
-            }
-
-            @Override
-            public Color getColor() {
-                return JBColor.GREEN;
-            }
-        },
-        NOT_STARTED {
-            @Override
-            public String toString() {
-                return "Not started";
-            }
-
-            @Override
-            public Color getColor() {
-                return JBColor.YELLOW;
-            }
-        },
-        NOT_PASSED {
-            @Override
-            public String toString() {
-                return "Not passed";
-            }
-
-            @Override
-            public Color getColor() {
-                return JBColor.RED;
-            }
-        };
-
-        public abstract Color getColor();
-    }
-
     protected String name = "";
     protected String condition = "";
     protected State state = State.NOT_STARTED;
@@ -141,5 +103,43 @@ public class Problem extends TreeFile {
     @Override
     public String toString() {
         return name;
+    }
+
+    public enum State {
+        PASSED {
+            @Override
+            public String toString() {
+                return "Passed";
+            }
+
+            @Override
+            public Color getColor() {
+                return JBColor.GREEN;
+            }
+        },
+        NOT_STARTED {
+            @Override
+            public String toString() {
+                return "Not started";
+            }
+
+            @Override
+            public Color getColor() {
+                return JBColor.YELLOW;
+            }
+        },
+        NOT_PASSED {
+            @Override
+            public String toString() {
+                return "Not passed";
+            }
+
+            @Override
+            public Color getColor() {
+                return JBColor.RED;
+            }
+        };
+
+        public abstract Color getColor();
     }
 }

@@ -7,9 +7,11 @@ import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -21,13 +23,17 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
+import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import com.intellij.execution.runners.ProgramRunner;
+import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.utils.ComponentUtils;
+import ru.hse.plugin.utils.NotificationUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 
 public class SubmissionPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
@@ -38,17 +44,22 @@ public class SubmissionPanel extends JPanel {
     private final JLabel verdict = new JLabel();
     private final HtmlPanel timeConsumed = new SimpleHtmlPanel();
     private final HtmlPanel memoryConsumed = new SimpleHtmlPanel();
-    private final ComboBox<String> files = new ComboBox<>();
+//    private final ComboBox<String> files = new ComboBox<>();
+    private final JButton testAndSubmit = new JButton("Test and Submit");
+    private final JButton test = new JButton("Test");
+    private final JButton reloadSubmission = new JButton("Reload Submission");
 
     private final Project project;
     private final ToolWindow toolWindow;
+    private final TestsPanel testsPanel;
     private Submission submission;
     private Problem problem;
 
-    public SubmissionPanel(Project project, ToolWindow toolWindow) {
+    public SubmissionPanel(Project project, ToolWindow toolWindow, TestsPanel testsPanel) {
         super(new GridBagLayout());
         this.project = project;
         this.toolWindow = toolWindow;
+        this.testsPanel = testsPanel;
         GridBagConstraints c = new GridBagConstraints();
         setupProblemName(c);
         setupSubmissions(c);
@@ -57,7 +68,7 @@ public class SubmissionPanel extends JPanel {
         setupVerdict(c);
         setupTimeConsumed(c);
         setupMemoryConsumed(c);
-        setupFile(c);
+//        setupFile(c);
         setupButtons(c);
 
         setupProblemCondition(c);
@@ -65,20 +76,48 @@ public class SubmissionPanel extends JPanel {
 
     public void setProblem(Problem problem) {
         this.problem = problem;
-
+        submissions.setModel(new DefaultComboBoxModel<>());
+        Submission newSubmission = new Submission();
+        newSubmission.setName("new");
+        newSubmission.setAuthor(Credentials.getInstance().getLogin());
+        if (!problem.getSubmissions().isEmpty()) {
+            Submission lastSubmission = problem.getSubmissions().get(0);
+            newSubmission.setTests(lastSubmission.getTests());
+            newSubmission.setSourceCode(lastSubmission.getSourceCode());
+            newSubmission.setCompiler(lastSubmission.getCompiler());
+        }
+        setSubmission(newSubmission);
+        submissions.addItem(newSubmission);
+        problem.getSubmissions().forEach(submissions::addItem);
+        problemCondition.setText(problem.getCondition());
+        problemName.setBody(problem.getName());
     }
 
     private void setSubmission(Submission submission) {
         this.submission = submission;
-        problemName.setBody(submission.getName());
-        problemCondition.setText(submission.getCondition());
         author.setBody(submission.getAuthor());
         verdict.setText(submission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
         timeConsumed.setBody(submission.getTimeConsumed());
         memoryConsumed.setBody(submission.getMemoryConsumed());
+        testsPanel.setTests(submission.getTests());
+        testAndSubmit.setEnabled(!submission.isSent());
+        test.setEnabled(true);
+        reloadSubmission.setEnabled(submission.isSent());
+        if (submission.getSourceCode().isEmpty()) {
+            return;
+        }
+        Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+        if (editor != null) {
+            Document document = editor.getDocument();
+            document.setText(submission.getSourceCode());
+        } else {
+            StringSelection selection = new StringSelection(submission.getSourceCode());
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+            NotificationUtils.showToolWindowMessage("Code is in clipboard", NotificationType.INFORMATION, project);
+        }
     }
 
-    public void clearSubmission() {
+    public void clearProblem() {
         ComponentUtils.clearComponent(problemName);
         ComponentUtils.clearComponent(problemCondition);
         ComponentUtils.clearComponent(author);
@@ -87,7 +126,10 @@ public class SubmissionPanel extends JPanel {
         ComponentUtils.clearComponent(memoryConsumed);
         ComponentUtils.clearComponent(submissions);
         ComponentUtils.clearComponent(languages);
-        ComponentUtils.clearComponent(files);
+//        ComponentUtils.clearComponent(files);
+        testAndSubmit.setEnabled(false);
+        test.setEnabled(false);
+        reloadSubmission.setEnabled(false);
     }
 
     private void setupProblemName(GridBagConstraints c) {
@@ -102,13 +144,11 @@ public class SubmissionPanel extends JPanel {
 
     private void setupSubmissions(GridBagConstraints c) {
         setupLabel(2, 0, "Submissions:", c);
-        MutableComboBoxModel<Submission> model = new DefaultComboBoxModel<>();
-        submissions.setModel(model);
-//        for (int k = 0; k < 100; k++) {
-//            Submission submission = new Submission();
-//            submission.setName("Version " + k);
-//            submissions.addItem(submission);
-//        }
+        submissions.setModel(new DefaultComboBoxModel<>());
+        submissions.addItemListener(e -> {
+            Submission submission = (Submission) e.getItem();
+            setSubmission(submission);
+        });
         c.gridx = 3;
         c.weightx = 0.0;
         c.gridy = 0;
@@ -121,6 +161,7 @@ public class SubmissionPanel extends JPanel {
     private void setupProblemCondition(GridBagConstraints c) {
         problemCondition.setLineWrap(true);
         problemCondition.setWrapStyleWord(true);
+        problemCondition.setEditable(false);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 1;
@@ -199,8 +240,9 @@ public class SubmissionPanel extends JPanel {
     }
 
     private JPanel setupButtonsPanel() {
-        JButton testAndSubmit = new JButton("Test and Submit");
-        JButton test = new JButton("Test");
+        testAndSubmit.setEnabled(false);
+        test.setEnabled(false);
+        reloadSubmission.setEnabled(false);
 
         test.addActionListener(a -> {
             RunManager.getInstance(project).getAllConfigurationsList().forEach(System.out::println);
@@ -219,25 +261,31 @@ public class SubmissionPanel extends JPanel {
 //            ProgramRunner.getRunner();
         });
 
+        reloadSubmission.addActionListener(a -> {
+            Submission newVersion = BackendManager.loadSubmission(submission.getName(), Credentials.getInstance());
+            setSubmission(newVersion);
+        });
+
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonsPanel.add(testAndSubmit);
         buttonsPanel.add(test);
+        buttonsPanel.add(reloadSubmission);
         return buttonsPanel;
     }
 
-    private void setupFile(GridBagConstraints c) {
-        setupLabel(2, 6, "File:", c);
-        MutableComboBoxModel<String> model = new DefaultComboBoxModel<>();
-        files.setModel(model);
-//        files.addItem("main.cpp");
-        c.gridx = 3;
-        c.weightx = 0.0;
-        c.gridy = 6;
-        c.weighty = 0.0;
-        c.anchor = GridBagConstraints.LINE_END;
-//        c.insets = JBUI.insets(5, 5, 5, 25);
-        add(files, c);
-    }
+//    private void setupFile(GridBagConstraints c) {
+//        setupLabel(2, 6, "File:", c);
+//        MutableComboBoxModel<String> model = new DefaultComboBoxModel<>();
+//        files.setModel(model);
+////        files.addItem("main.cpp");
+//        c.gridx = 3;
+//        c.weightx = 0.0;
+//        c.gridy = 6;
+//        c.weighty = 0.0;
+//        c.anchor = GridBagConstraints.LINE_END;
+////        c.insets = JBUI.insets(5, 5, 5, 25);
+//        add(files, c);
+//    }
 
     private void setupLabel(int x, int y, String name, GridBagConstraints c) {
         JLabel label = new JLabel(name);

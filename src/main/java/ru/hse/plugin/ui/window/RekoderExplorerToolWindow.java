@@ -11,9 +11,10 @@ import com.intellij.ui.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
-import org.intellij.lang.annotations.JdkConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.hse.plugin.data.ContentHolder;
+import ru.hse.plugin.ui.listeners.ContentHolderClickListener;
 import ru.hse.plugin.ui.listeners.FolderClickListener;
 import ru.hse.plugin.ui.listeners.ProblemClickListener;
 import ru.hse.plugin.ui.renderers.ProblemsTreeRenderer;
@@ -26,7 +27,7 @@ import java.awt.event.*;
 
 public class RekoderExplorerToolWindow extends SimpleToolWindowPanel implements DataProvider {
     private Tree problemsTree;
-    private JBList<Object> teams;
+    private JBList<ContentHolder> teams;
 
     private ProblemPanel problemPanel;
 
@@ -60,21 +61,13 @@ public class RekoderExplorerToolWindow extends SimpleToolWindowPanel implements 
 //    }
 
     private JComponent setupExplorerPart(Project project, ToolWindow toolWindow) {
-        DefaultListModel<Object> teamsModel = new DefaultListModel<>();
+        CollectionListModel<ContentHolder> teamsModel = new CollectionListModel<>();
         teams = new JBList<>(teamsModel);
         new ListSpeedSearch<>(teams);
         teams.setCellRenderer(new TeamsListRenderer());
         teams.setEmptyText("Teams");
         teams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        teams.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    System.out.println(teams.getSelectedValue());
-                }
-            }
-        }); // TODO: вынести в отдельный файл
+        teams.addListSelectionListener(new ContentHolderClickListener(project));
 
         problemsTree = new Tree();
         problemsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);

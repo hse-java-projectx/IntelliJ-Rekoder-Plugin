@@ -1,8 +1,6 @@
 package ru.hse.plugin.data;
 
-import javax.swing.*;
-
-public class Team {
+public class Team extends ContentHolder {
     private final String name;
 
     public Team(String name) {

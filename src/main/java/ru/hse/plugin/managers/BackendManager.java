@@ -70,13 +70,27 @@ public class BackendManager {
         if (rnd.nextBoolean()) {
             problem.setSubmissions(Collections.emptyList());
         } else {
-            Submission submission = new Submission();
-            submission.setSourceCode("public static List<String> getProblemCompilers(Problem problem, Credentials credentials) {\n" +
-                    "        return Arrays.asList(\"gcc\", \"g++\", \"clang\");\n" +
-                    "    }");
-            problem.setSubmissions(Collections.singletonList(submission));
+            problem.setSubmissions(Collections.singletonList(loadSubmission("", credentials)));
         }
         return problem;
+    }
+
+    public static Submission loadSubmission(String submissionId, Credentials credentials) {
+        Submission submission = new Submission();
+        submission.setSourceCode("public class Main {\n" +
+                "    public static void main(String[]args){\n" +
+                "        \n" +
+                "    }\n" +
+                "}");
+        submission.setAuthor(credentials.getLogin());
+        submission.setName("1");
+        submission.setCompiler("gcc");
+        submission.setVerdict("WA");
+        submission.setMemoryConsumed("100");
+        submission.setTimeConsumed("3");
+        submission.setTests(Arrays.asList(new TestImpl("abc", "cba"), new TestImpl("aac", "caa")));
+        submission.setSent(true);
+        return submission;
     }
 
     public static List<String> getProblemCompilers(Problem problem, Credentials credentials) {
