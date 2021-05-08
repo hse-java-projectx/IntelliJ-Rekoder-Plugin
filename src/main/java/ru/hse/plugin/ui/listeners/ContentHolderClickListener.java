@@ -17,6 +17,7 @@ public class ContentHolderClickListener implements ListSelectionListener {
     }
 
     @Override
+    @SuppressWarnings("unchecked cast")
     public void valueChanged(ListSelectionEvent e) {
         if (!(e.getSource() instanceof JBList)) {
             return;

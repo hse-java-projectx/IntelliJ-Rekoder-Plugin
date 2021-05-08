@@ -76,6 +76,7 @@ public class TestsPanel extends JPanel {
         private final JBTextArea inputArea;
         private final JBTextArea outputArea;
         private JButton button;
+        private Status status = Status.NOT_TESTED;
 
         public TestPanel(JPanel parent, String input, String output, boolean canChangeTest) {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -134,6 +135,16 @@ public class TestsPanel extends JPanel {
         @Override
         public void setOutput(String output) {
             outputArea.setText(output);
+        }
+
+        @Override
+        public Status getStatus() {
+            return status;
+        }
+
+        @Override
+        public void setStatus(Status status) {
+            this.status = status;
         }
     }
 }

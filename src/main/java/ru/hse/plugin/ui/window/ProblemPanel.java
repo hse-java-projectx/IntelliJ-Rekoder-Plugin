@@ -1,6 +1,8 @@
 package ru.hse.plugin.ui.window;
 
 import com.intellij.ide.highlighter.JavaFileType;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -154,9 +156,12 @@ public class ProblemPanel extends JPanel {
     private JPanel setupButtonsPanel(Project project, ToolWindow toolWindow) {
         // Buttons
         startSolving.addActionListener(a -> {
-            ProblemManager.setProblem(project, getProblem());
-            ContentManager contentManager = toolWindow.getContentManager();
-            contentManager.setSelectedContent(contentManager.getContent(1));
+            Application application = ApplicationManager.getApplication();
+            application.runWriteAction(() -> {
+                ProblemManager.setProblem(project, getProblem());
+                ContentManager contentManager = toolWindow.getContentManager();
+                contentManager.setSelectedContent(contentManager.getContent(1));
+            });
         });
 
 //        Arrays.stream(FileTypeRegistry.getInstance().getRegisteredFileTypes()).forEach(f -> System.out.println(f.getName()));
