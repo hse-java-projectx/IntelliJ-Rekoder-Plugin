@@ -158,7 +158,9 @@ public class SubmissionPanel extends JPanel {
             if (!this.submission.isSent()) {
                 this.submission.setTests(testsPanel.getTests());
             }
-            setSubmission(submission);
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                setSubmission(submission);
+            });
         });
         c.gridx = 3;
         c.weightx = 0.0;
@@ -258,24 +260,46 @@ public class SubmissionPanel extends JPanel {
         test.addActionListener(a -> {
             java.util.List<Test> list = ProblemManager.getTests(project);
             if (list.isEmpty()) return;
-            Test test = list.get(0);
-
-
             DefaultExecutor runExecutor = new DefaultExecutor();
             ProgressManager progressManager = new ProgressManagerImpl();
             progressManager.run(new Task.Backgroundable(project, "Testing", true) {
                 @Override
                 public void run(@NotNull ProgressIndicator indicator) {
-                    ApplicationManager.getApplication().executeOnPooledThread(() -> showFakeProgress(indicator));
-                    Optional<String> result = runExecutor.execute(project, indicator, test.getInput());
-                    if (result.isPresent()) {
-                        System.out.println("Expected: " + test.getOutput());
-                        System.out.println("Actual: " + result.get());
-                    } else {
-                        System.out.println("Failed to execute");
+                    for (Test test : list) {
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            ApplicationManager.getApplication().runWriteAction(() -> test.setStatus(Test.Status.TESTING));
+                        });
+                        System.out.println(test.getInput());
+                        System.out.println(test.getOutput());
+                        Optional<String> result = runExecutor.execute(project, indicator, test.getInput());
+                        Test.Status status;
+                        if (result.isPresent()) {
+                            System.out.println(result.get());
+                            if (test.getOutput().equals(result.get())) {
+                                status = Test.Status.PASSED;
+                            } else {
+                                status = Test.Status.FAILED;
+                            }
+                        } else {
+                            status = Test.Status.ERROR;
+                        }
+                        System.out.println("Status: " + status);
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            ApplicationManager.getApplication().runWriteAction(() -> test.setStatus(status));
+                        });
+                    }
+                }
+
+                @Override
+                public void onCancel() {
+                    for (Test test : list) {
+                        if (test.getStatus().equals(Test.Status.TESTING)) {
+                            ApplicationManager.getApplication().runWriteAction(() -> test.setStatus(Test.Status.NOT_TESTED));
+                        }
                     }
                 }
             });
+
 //            RunManager.getInstance(project).getAllConfigurationsList().forEach(System.out::println);
 //            RunnerAndConfigurationSettings settings = RunManager.getInstance(project).getSelectedConfiguration();
 //            new ConfigurationContext()

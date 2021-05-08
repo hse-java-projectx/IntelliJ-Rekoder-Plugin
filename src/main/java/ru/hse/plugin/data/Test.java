@@ -45,6 +45,28 @@ public interface Test {
             public String toString() {
                 return "Failed";
             }
+        },
+        ERROR {
+            @Override
+            public Color getColor() {
+                return JBColor.BLACK;
+            }
+
+            @Override
+            public String toString() {
+                return "Error";
+            }
+        },
+        TESTING {
+            @Override
+            public Color getColor() {
+                return JBColor.YELLOW;
+            }
+
+            @Override
+            public String toString() {
+                return "Testing";
+            }
         };
         public abstract Color getColor();
     }

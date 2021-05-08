@@ -69,13 +69,14 @@ public class TestsPanel extends JPanel {
 
     public void clearTests() {
         testsPanel.removeAll();
-        newTestButton.setEnabled(true);
+        newTestButton.setEnabled(false);
     }
 
     private static class TestPanel extends JPanel implements Test {
         private final JBTextArea inputArea;
         private final JBTextArea outputArea;
         private JButton button;
+        JLabel label = new JLabel();
         private Status status = Status.NOT_TESTED;
 
         public TestPanel(JPanel parent, String input, String output, boolean canChangeTest) {
@@ -88,16 +89,17 @@ public class TestsPanel extends JPanel {
             s2.setResizeEnabled(false);
 
             inputArea = new JBTextArea(input);
+            inputArea.setEditable(canChangeTest);
 //        inputArea.setMinimumSize(new Dimension(200, 50));
             outputArea = new JBTextArea(output);
+            outputArea.setEditable(canChangeTest);
 //        outputArea.setMinimumSize(new Dimension(200, 50));
             button = new JButton("Delete");
             button.setEnabled(canChangeTest);
             JBSplitter s3 = new JBSplitter(false);
             s3.setResizeEnabled(false);
-            JLabel label = new JLabel("Passed");
             label.setHorizontalAlignment(JLabel.CENTER);
-            label.setForeground(JBColor.GREEN);
+            updateLabel();
             s3.setFirstComponent(label);
             s3.setSecondComponent(button);
             button.addActionListener(a -> {
@@ -145,6 +147,13 @@ public class TestsPanel extends JPanel {
         @Override
         public void setStatus(Status status) {
             this.status = status;
+            updateLabel();
+        }
+
+        private void updateLabel() {
+            label.setText(status.toString());
+            label.setForeground(status.getColor());
+            label.updateUI();
         }
     }
 }
