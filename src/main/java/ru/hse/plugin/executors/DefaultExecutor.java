@@ -102,6 +102,7 @@ public class DefaultExecutor {
 
         AtomicBoolean result = new AtomicBoolean(false);
         Disposable rootDisposable = Disposer.newDisposable();
+        Disposer.register(project, rootDisposable);
 
         ApplicationManager.getApplication().invokeLater(() -> {
             ProgramRunner<RunnerSettings> runner = ProgramRunner.getRunner(DefaultRunExecutor.EXECUTOR_ID, configuration.getConfiguration());

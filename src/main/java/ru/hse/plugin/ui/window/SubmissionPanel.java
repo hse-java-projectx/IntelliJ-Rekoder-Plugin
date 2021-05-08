@@ -1,32 +1,20 @@
 package ru.hse.plugin.ui.window;
 
-import com.intellij.execution.*;
-import com.intellij.execution.actions.ConfigurationContext;
-import com.intellij.execution.actions.RunConfigurationProducer;
-import com.intellij.execution.configurations.*;
-import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessHandler;
-import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
-import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
@@ -299,37 +287,13 @@ public class SubmissionPanel extends JPanel {
                     }
                 }
             });
-
-//            RunManager.getInstance(project).getAllConfigurationsList().forEach(System.out::println);
-//            RunnerAndConfigurationSettings settings = RunManager.getInstance(project).getSelectedConfiguration();
-//            new ConfigurationContext()
-//            new ProgressIndicator();
-//            DumbService.getInstance(project).runReadActionInSmartMode();
-//            if (settings != null) {
-////                ExecutionListener
-////                System.out.println(RunManager.getInstance(project).getSelectedConfiguration().getConfiguration());
-//                RunConfiguration runConfiguration = settings.getConfiguration();
-//                Element input = new Element("Input");
-//                input.setText("Abc");
-//                runConfiguration.readExternal(input);
-//                Element output = new Element("Output");
-//                runConfiguration.writeExternal(output);
-//                ProgramRunner<RunnerSettings> runner = ProgramRunner.getRunner(DefaultRunExecutor.EXECUTOR_ID, settings.getConfiguration());
-//
-//                try {
-//                    runner.execute(new ExecutionEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runner, settings, project));
-//                    System.out.println("Output: " + output.getText());
-//                } catch (ExecutionException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            System.out.println(RunManager.getInstance(project).getSelectedConfiguration().getName());
-//            ProgramRunner.getRunner();
         });
 
         reloadSubmission.addActionListener(a -> {
             Submission newVersion = BackendManager.loadSubmission(submission.getName(), Credentials.getInstance());
-            setSubmission(newVersion);
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                setSubmission(newVersion);
+            });
         });
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -337,20 +301,6 @@ public class SubmissionPanel extends JPanel {
         buttonsPanel.add(test);
         buttonsPanel.add(reloadSubmission);
         return buttonsPanel;
-    }
-
-    private void showFakeProgress(ProgressIndicator indicator) {
-        indicator.setIndeterminate(false);
-        indicator.setFraction(0.01);
-        try {
-            while (indicator.isRunning()) {
-                Thread.sleep(1000);
-                double fraction = indicator.getFraction();
-                indicator.setFraction(fraction + (1 - fraction) * 0.2);
-            }
-        }
-        catch (InterruptedException ignore) {
-        }
     }
 
 //    private void setupFile(GridBagConstraints c) {
