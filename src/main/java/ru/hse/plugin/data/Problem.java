@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Problem extends TreeFile {
     protected String name = "";
-    protected String condition = "";
+    protected String statement = "";
     protected State state = State.NOT_STARTED;
     protected int numberOfAttempts = 0;
     protected String source = "";
@@ -19,9 +19,9 @@ public class Problem extends TreeFile {
     public Problem() {
 
     }
-    public Problem(String name, String condition, State state, int numberOfAttempts, String source, List<String> tags, List<Submission> submissions) {
+    public Problem(String name, String statement, State state, int numberOfAttempts, String source, List<String> tags, List<Submission> submissions) {
         this.name = name;
-        this.condition = condition;
+        this.statement = statement;
         this.state = state;
         this.numberOfAttempts = numberOfAttempts;
         this.source = source;
@@ -32,7 +32,7 @@ public class Problem extends TreeFile {
     public void loadFrom(Problem other) {
         isLoaded = true;
         name = other.name;
-        condition = other.condition;
+        statement = other.statement;
         state = other.state;
         numberOfAttempts = other.numberOfAttempts;
         source = other.source;
@@ -44,12 +44,12 @@ public class Problem extends TreeFile {
         this.name = name;
     }
 
-    public String getCondition() {
-        return condition;
+    public String getStatement() {
+        return statement;
     }
 
-    public void setCondition(String condition) {
-        this.condition = condition;
+    public void setStatement(String statement) {
+        this.statement = statement;
     }
 
     public State getState() {

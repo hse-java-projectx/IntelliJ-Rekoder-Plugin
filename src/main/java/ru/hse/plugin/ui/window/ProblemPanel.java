@@ -15,6 +15,8 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.jcef.JBCefApp;
+import com.intellij.ui.jcef.JCEFHtmlPanel;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Problem;
@@ -29,12 +31,15 @@ public class ProblemPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
     private final JLabel problemState = new JLabel();
     private final JLabel numberOfAttempts = new JLabel();
-    private final JTextArea problemCondition = new JTextArea();
+    private final JCEFHtmlPanel problemStatement = new RekoderHtmlPanel(JBCefApp.getInstance().createClient(), null);
     private final HtmlPanel problemSource = new SimpleHtmlPanel();
     private final JPanel tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     private Problem problem;
     private final JButton startSolving = new JButton("Start solving");
     private final JButton previewCode = new JButton("Preview code");
+
+    private final Project project;
+    private final ToolWindow toolWindow;
 
     public void setProblem(Problem problem) {
         this.problem = problem;
@@ -42,7 +47,7 @@ public class ProblemPanel extends JPanel {
         problemState.setText(problem.getState().toString());
         problemState.setForeground(problem.getState().getColor());
         numberOfAttempts.setText(String.valueOf(problem.getNumberOfAttempts()));
-        problemCondition.setText(problem.getCondition());
+        problemStatement.setHtml(problem.getStatement());
         problemSource.setBody(problem.getSource());
         tagsPanel.removeAll();
         problem.getTags().forEach(t -> tagsPanel.add(new JLabel(t)));
@@ -55,7 +60,7 @@ public class ProblemPanel extends JPanel {
         ComponentUtils.clearComponent(problemName);
         ComponentUtils.clearComponent(problemState);
         ComponentUtils.clearComponent(numberOfAttempts);
-        ComponentUtils.clearComponent(problemCondition);
+        ComponentUtils.clearComponent(problemStatement);
         ComponentUtils.clearComponent(problemSource);
         tagsPanel.removeAll();
         startSolving.setEnabled(false);
@@ -64,6 +69,8 @@ public class ProblemPanel extends JPanel {
 
     public ProblemPanel(Project project, ToolWindow toolWindow) {
         super(new GridBagLayout());
+        this.project = project;
+        this.toolWindow = toolWindow;
         GridBagConstraints c = new GridBagConstraints();
         setupProblemName(c);
         setupProblemState(c);
@@ -71,7 +78,7 @@ public class ProblemPanel extends JPanel {
         setupProblemSource(c);
         setupTags(c);
         setupButtons(project, toolWindow, c);
-        setupProblemCondition(c);
+        setupProblemStatement(c);
     }
 
     private void setupProblemName(GridBagConstraints c) {
@@ -84,7 +91,7 @@ public class ProblemPanel extends JPanel {
     }
 
     private void setupProblemState(GridBagConstraints c) {
-        setupLabel(0, 3, "Number of attempts:", c);
+        setupLabel(0, 3, "State:", c);
         c.gridx = 1;
         c.gridy = 3;
         c.weighty = 0.0;
@@ -109,19 +116,16 @@ public class ProblemPanel extends JPanel {
         add(numberOfAttempts, c);
     }
 
-    private void setupProblemCondition(GridBagConstraints c) {
-        setupLabel(0, 1, "Condition:", c);
-
-        problemCondition.setLineWrap(true);
-        problemCondition.setWrapStyleWord(true);
-        problemCondition.setEditable(false);
+    private void setupProblemStatement(GridBagConstraints c) {
+        setupLabel(0, 1, "Statement:", c);
+        Disposer.register(project, problemStatement);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 2;
         c.weighty = 0.5;
         c.gridwidth = 4;
         c.insets = JBUI.insets(0, 5, 5, 5);
-        add(new JBScrollPane(problemCondition), c);
+        add(new JBScrollPane(problemStatement.getComponent()), c);
     }
 
     private void setupProblemSource(GridBagConstraints c) {

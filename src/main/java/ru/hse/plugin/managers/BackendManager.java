@@ -62,7 +62,7 @@ public class BackendManager {
     public static Problem loadProblem(String problemId, Credentials credentials) {
         Problem problem = new Problem();
         problem.setName(problemId);
-        problem.setCondition(getRandomString(300));
+        problem.setStatement("Diamond Miner is a game that is similar to Gold Miner, but there are $$$n$$$ miners instead of $$$1$$$ in this game. The mining area can be described as a plane. The $$$n$$$ miners can be regarded as $$$n$$$ points on the y-axis. There are $$$n$$$ diamond mines in the mining area. We can regard them as $$$n$$$ points on the x-axis. For some reason, no miners or diamond mines can be at the origin (point $$$(0, 0)$$$). Every miner should mine exactly one diamond mine. Every miner has a hook, which can be used to mine a diamond mine. If a miner at the point $$$(a,b)$$$ uses his hook to mine a diamond mine at the point $$$(c,d)$$$, he will spend $$$\\sqrt{(a-c)^2+(b-d)^2}$$$ energy to mine it (the distance between these points). The miners can't move or help each other. The object of this game is to minimize the sum of the energy that miners spend. Can you find this minimum?");
         problem.setSource(getRandomString(15));
         problem.setState(Problem.State.values()[rnd.nextInt(3)]);
         problem.setNumberOfAttempts(rnd.nextInt(1000));

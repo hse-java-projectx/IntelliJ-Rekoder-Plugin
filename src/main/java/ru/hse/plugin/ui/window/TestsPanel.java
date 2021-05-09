@@ -1,7 +1,6 @@
 package ru.hse.plugin.ui.window;
 
 import com.intellij.diff.DiffDialogHints;
-import com.intellij.diff.actions.impl.MutableDiffRequestChain;
 import com.intellij.diff.chains.SimpleDiffRequestChain;
 import com.intellij.diff.contents.DiffContent;
 import com.intellij.diff.contents.DocumentContentImpl;

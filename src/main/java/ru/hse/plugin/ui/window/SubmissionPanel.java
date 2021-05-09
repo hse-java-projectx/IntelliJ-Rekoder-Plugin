@@ -8,24 +8,19 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.jcef.JBCefApp;
+import com.intellij.ui.jcef.JCEFHtmlPanel;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
-import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
-import ru.hse.plugin.data.Test;
-import ru.hse.plugin.executors.DefaultExecutor;
 import ru.hse.plugin.managers.BackendManager;
-import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.ui.listeners.TestListener;
 import ru.hse.plugin.utils.ComponentUtils;
 import ru.hse.plugin.utils.NotificationUtils;
@@ -33,12 +28,11 @@ import ru.hse.plugin.utils.NotificationUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.util.Optional;
 
 public class SubmissionPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
     private final ComboBox<Submission> submissions = new ComboBox<>();
-    private final JTextArea problemCondition = new JTextArea();
+    private final JCEFHtmlPanel problemStatement = new RekoderHtmlPanel(JBCefApp.getInstance().createClient(), null);
     private final HtmlPanel author = new SimpleHtmlPanel();
     private final ComboBox<String> languages = new ComboBox<>();
     private final JLabel verdict = new JLabel();
@@ -71,7 +65,7 @@ public class SubmissionPanel extends JPanel {
 //        setupFile(c);
         setupButtons(c);
 
-        setupProblemCondition(c);
+        setupProblemStatement(c);
     }
 
     public void setProblem(Problem problem) {
@@ -89,7 +83,7 @@ public class SubmissionPanel extends JPanel {
         setSubmission(newSubmission);
         submissions.addItem(newSubmission);
         problem.getSubmissions().forEach(submissions::addItem);
-        problemCondition.setText(problem.getCondition());
+        problemStatement.setHtml(problem.getStatement());
         problemName.setBody(problem.getName());
     }
 
@@ -124,7 +118,7 @@ public class SubmissionPanel extends JPanel {
 
     public void clearProblem() {
         ComponentUtils.clearComponent(problemName);
-        ComponentUtils.clearComponent(problemCondition);
+        ComponentUtils.clearComponent(problemStatement);
         ComponentUtils.clearComponent(author);
         ComponentUtils.clearComponent(verdict);
         ComponentUtils.clearComponent(timeConsumed);
@@ -178,17 +172,15 @@ public class SubmissionPanel extends JPanel {
         add(submissions, c);
     }
 
-    private void setupProblemCondition(GridBagConstraints c) {
-        problemCondition.setLineWrap(true);
-        problemCondition.setWrapStyleWord(true);
-        problemCondition.setEditable(false);
+    private void setupProblemStatement(GridBagConstraints c) {
+        Disposer.register(project, problemStatement);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 1;
         c.weighty = 0.5;
         c.gridwidth = 4;
         c.insets = JBUI.insets(5);
-        add(new JBScrollPane(problemCondition), c);
+        add(new JBScrollPane(problemStatement.getComponent()), c);
     }
 
     private void setupAuthor(GridBagConstraints c) {
