@@ -7,8 +7,10 @@ import java.awt.*;
 public interface Test {
     String getInput();
     void setInput(String input);
-    String getOutput();
-    void setOutput(String output);
+    String getExpectedOutput();
+    void setExpectedOutput(String output);
+    String getActualOutput();
+    void setActualOutput(String output);
     Status getStatus();
     void setStatus(Status status);
 

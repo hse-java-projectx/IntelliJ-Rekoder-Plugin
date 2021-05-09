@@ -2,12 +2,13 @@ package ru.hse.plugin.data;
 
 public class TestImpl implements Test {
     private String input;
-    private String output;
+    private String expectedOutput;
+    private String actualOutput;
     private Status status;
 
-    public TestImpl(String input, String output) {
+    public TestImpl(String input, String expectedOutput) {
         this.input = input;
-        this.output = output;
+        this.expectedOutput = expectedOutput;
         this.status = Status.NOT_TESTED;
     }
 
@@ -22,13 +23,23 @@ public class TestImpl implements Test {
     }
 
     @Override
-    public String getOutput() {
-        return output;
+    public String getExpectedOutput() {
+        return expectedOutput;
     }
 
     @Override
-    public void setOutput(String output) {
-        this.output = output;
+    public void setExpectedOutput(String output) {
+        this.expectedOutput = output;
+    }
+
+    @Override
+    public String getActualOutput() {
+        return actualOutput;
+    }
+
+    @Override
+    public void setActualOutput(String actualOutput) {
+        this.actualOutput = actualOutput;
     }
 
     @Override

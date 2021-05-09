@@ -2,6 +2,9 @@ package ru.hse.plugin.ui.window;
 
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -23,6 +26,7 @@ import ru.hse.plugin.data.Test;
 import ru.hse.plugin.executors.DefaultExecutor;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.managers.ProblemManager;
+import ru.hse.plugin.ui.listeners.TestListener;
 import ru.hse.plugin.utils.ComponentUtils;
 import ru.hse.plugin.utils.NotificationUtils;
 
@@ -104,8 +108,13 @@ public class SubmissionPanel extends JPanel {
         }
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         if (editor != null) {
-            Document document = editor.getDocument();
-            document.setText(submission.getSourceCode());
+            WriteAction.run(() -> {
+                CommandProcessor.getInstance().executeCommand(project, () -> {
+                    Document document = editor.getDocument();
+                    document.setText(submission.getSourceCode());
+                }, "Change File Text", this.getClass());
+            });
+
         } else {
             StringSelection selection = new StringSelection(submission.getSourceCode());
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
@@ -142,12 +151,22 @@ public class SubmissionPanel extends JPanel {
         setupLabel(2, 0, "Submissions:", c);
         submissions.setModel(new DefaultComboBoxModel<>());
         submissions.addItemListener(e -> {
-            Submission submission = (Submission) e.getItem();
+            Submission newSubmission = (Submission) e.getItem();
             if (!this.submission.isSent()) {
-                this.submission.setTests(testsPanel.getTests());
+                ReadAction.run(() -> {
+                    this.submission.setTests(testsPanel.getTests());
+                    Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+                    if (editor == null) {
+                        return;
+                    }
+                    CommandProcessor.getInstance().executeCommand(project, () -> {
+                        Document document = editor.getDocument();
+                        this.submission.setSourceCode(document.getText());
+                    }, "Save File Text", this.getClass());
+                });
             }
             ApplicationManager.getApplication().runWriteAction(() -> {
-                setSubmission(submission);
+                setSubmission(newSubmission);
             });
         });
         c.gridx = 3;
@@ -245,49 +264,7 @@ public class SubmissionPanel extends JPanel {
         test.setEnabled(false);
         reloadSubmission.setEnabled(false);
 
-        test.addActionListener(a -> {
-            java.util.List<Test> list = ProblemManager.getTests(project);
-            if (list.isEmpty()) return;
-            DefaultExecutor runExecutor = new DefaultExecutor();
-            ProgressManager progressManager = new ProgressManagerImpl();
-            progressManager.run(new Task.Backgroundable(project, "Testing", true) {
-                @Override
-                public void run(@NotNull ProgressIndicator indicator) {
-                    for (Test test : list) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            ApplicationManager.getApplication().runWriteAction(() -> test.setStatus(Test.Status.TESTING));
-                        });
-                        System.out.println(test.getInput());
-                        System.out.println(test.getOutput());
-                        Optional<String> result = runExecutor.execute(project, indicator, test.getInput());
-                        Test.Status status;
-                        if (result.isPresent()) {
-                            System.out.println(result.get());
-                            if (test.getOutput().equals(result.get())) {
-                                status = Test.Status.PASSED;
-                            } else {
-                                status = Test.Status.FAILED;
-                            }
-                        } else {
-                            status = Test.Status.ERROR;
-                        }
-                        System.out.println("Status: " + status);
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                            ApplicationManager.getApplication().runWriteAction(() -> test.setStatus(status));
-                        });
-                    }
-                }
-
-                @Override
-                public void onCancel() {
-                    for (Test test : list) {
-                        if (test.getStatus().equals(Test.Status.TESTING)) {
-                            ApplicationManager.getApplication().runWriteAction(() -> test.setStatus(Test.Status.NOT_TESTED));
-                        }
-                    }
-                }
-            });
-        });
+        test.addActionListener(new TestListener(project));
 
         reloadSubmission.addActionListener(a -> {
             Submission newVersion = BackendManager.loadSubmission(submission.getName(), Credentials.getInstance());

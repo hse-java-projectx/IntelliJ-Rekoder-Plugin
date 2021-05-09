@@ -133,7 +133,6 @@ public class DefaultExecutor {
                         processHandler.addProcessListener(processAdapter);
                     }
                 });
-
                 runner.execute(environment);
                 result.set(true);
             } catch (ExecutionException ex) {
