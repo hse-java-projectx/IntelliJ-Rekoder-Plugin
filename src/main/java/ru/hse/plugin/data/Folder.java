@@ -1,8 +1,21 @@
 package ru.hse.plugin.data;
 
+import com.google.api.client.util.Key;
+
+import java.util.List;
+
 public class Folder extends TreeFile {
-    private final String name;
+    @Key
+    private String name;
+    @Key("subfolders")
+    private List<Folder> subFolders;
+
+
     private boolean loaded = false;
+
+    public Folder() {
+
+    }
 
     public Folder(String name) {
         this.name = name;
@@ -18,6 +31,16 @@ public class Folder extends TreeFile {
 
     public String getName() {
         return name;
+    }
+
+
+
+    public List<Folder> getSubFolders() {
+        return subFolders;
+    }
+
+    public void setSubFolders(List<Folder> subFolders) {
+        this.subFolders = subFolders;
     }
 
     @Override

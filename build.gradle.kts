@@ -18,6 +18,11 @@ repositories {
     jcenter()
 }
 
+dependencies {
+    implementation("com.google.http-client:google-http-client:1.39.2")
+    implementation("com.google.api-client:google-api-client-gson:1.31.4")
+}
+
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {

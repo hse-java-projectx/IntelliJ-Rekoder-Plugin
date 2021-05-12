@@ -1,12 +1,16 @@
 package ru.hse.plugin.data;
 
+import com.google.api.client.util.Key;
+
 import java.util.Collections;
 import java.util.List;
 
 public class Submission {
     private String name = "";
     private String author = "";
+    @Key
     private String sourceCode = "";
+    @Key
     private String compiler = "";
     private String verdict = "";
     private String timeConsumed = "";
