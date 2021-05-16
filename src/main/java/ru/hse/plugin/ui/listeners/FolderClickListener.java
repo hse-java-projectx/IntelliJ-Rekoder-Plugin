@@ -16,7 +16,7 @@ public class FolderClickListener implements TreeWillExpandListener {
         Folder folder = (Folder) event.getPath().getLastPathComponent();
         if (!folder.isLoaded()) {
             folder.setLoaded();
-            List<TreeFile> files = BackendManager.loadFolder(folder.getName(), Credentials.getInstance());
+            List<TreeFile> files = new BackendManager(Credentials.getInstance()).loadFolder(folder.getName());
             files.forEach(folder::add);
         }
     }

@@ -15,7 +15,6 @@ public class Submission {
     private String verdict = "";
     private String timeConsumed = "";
     private String memoryConsumed = "";
-    private List<Test> tests = Collections.emptyList();
     private boolean isSent = false;
 
     public String getName() {
@@ -72,14 +71,6 @@ public class Submission {
 
     public void setAuthor(String author) {
         this.author = author;
-    }
-
-    public List<Test> getTests() {
-        return tests;
-    }
-
-    public void setTests(List<Test> tests) {
-        this.tests = tests;
     }
 
     public boolean isSent() {

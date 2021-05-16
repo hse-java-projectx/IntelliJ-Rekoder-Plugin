@@ -76,7 +76,6 @@ public class SubmissionPanel extends JPanel {
         newSubmission.setAuthor(Credentials.getInstance().getLogin());
         if (!problem.getSubmissions().isEmpty()) {
             Submission lastSubmission = problem.getSubmissions().get(0);
-            newSubmission.setTests(lastSubmission.getTests());
             newSubmission.setSourceCode(lastSubmission.getSourceCode());
             newSubmission.setCompiler(lastSubmission.getCompiler());
         }
@@ -85,6 +84,7 @@ public class SubmissionPanel extends JPanel {
         problem.getSubmissions().forEach(submissions::addItem);
         problemStatement.setHtml(problem.getStatement());
         problemName.setBody(problem.getName());
+        testsPanel.setTests(problem.getTests());
     }
 
     private void setSubmission(Submission submission) {
@@ -93,7 +93,6 @@ public class SubmissionPanel extends JPanel {
         verdict.setText(submission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
         timeConsumed.setBody(submission.getTimeConsumed());
         memoryConsumed.setBody(submission.getMemoryConsumed());
-        testsPanel.setTests(submission.getTests(), !submission.isSent());
         testAndSubmit.setEnabled(!submission.isSent());
         test.setEnabled(true);
         reloadSubmission.setEnabled(submission.isSent());
@@ -148,7 +147,6 @@ public class SubmissionPanel extends JPanel {
             Submission newSubmission = (Submission) e.getItem();
             if (!this.submission.isSent()) {
                 ReadAction.run(() -> {
-                    this.submission.setTests(testsPanel.getTests());
                     Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                     if (editor == null) {
                         return;
@@ -259,7 +257,7 @@ public class SubmissionPanel extends JPanel {
         test.addActionListener(new TestListener(project));
 
         reloadSubmission.addActionListener(a -> {
-            Submission newVersion = BackendManager.loadSubmission(submission.getName(), Credentials.getInstance());
+            Submission newVersion = new BackendManager(Credentials.getInstance()).loadSubmission(submission.getName());
             ApplicationManager.getApplication().runWriteAction(() -> {
                 setSubmission(newVersion);
             });

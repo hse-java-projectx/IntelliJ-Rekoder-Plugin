@@ -1,10 +1,18 @@
 package ru.hse.plugin.data;
 
+import com.google.api.client.util.Key;
+
 public class TestImpl implements Test {
+    @Key
     private String input;
+    @Key("output")
     private String expectedOutput;
     private String actualOutput;
     private Status status;
+
+    public TestImpl() {
+
+    }
 
     public TestImpl(String input, String expectedOutput) {
         this.input = input;

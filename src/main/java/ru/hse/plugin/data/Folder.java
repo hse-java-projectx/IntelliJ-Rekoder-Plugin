@@ -7,8 +7,8 @@ import java.util.List;
 public class Folder extends TreeFile {
     @Key
     private String name;
-    @Key("subfolders")
-    private List<Folder> subFolders;
+    @Key
+    private int id;
 
 
     private boolean loaded = false;
@@ -17,8 +17,9 @@ public class Folder extends TreeFile {
 
     }
 
-    public Folder(String name) {
+    public Folder(String name, int id) {
         this.name = name;
+        this.id = id;
     }
 
     public boolean isLoaded() {
@@ -31,16 +32,6 @@ public class Folder extends TreeFile {
 
     public String getName() {
         return name;
-    }
-
-
-
-    public List<Folder> getSubFolders() {
-        return subFolders;
-    }
-
-    public void setSubFolders(List<Folder> subFolders) {
-        this.subFolders = subFolders;
     }
 
     @Override

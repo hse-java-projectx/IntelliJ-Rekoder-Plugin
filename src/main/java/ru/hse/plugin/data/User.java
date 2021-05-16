@@ -1,14 +1,30 @@
 package ru.hse.plugin.data;
 
-public class User extends ContentHolder {
-    private final String name;
+import com.google.api.client.util.Key;
 
-    public User(String name) {
+import java.util.List;
+
+public class User extends ContentHolder {
+    @Key
+    private String name;
+    @Key("teamIds")
+    private List<String> teams;
+
+    public User() {
+
+    }
+
+    public User(String name, List<String> teams) {
         this.name = name;
+        this.teams = teams;
     }
 
     public String getName() {
         return name;
+    }
+
+    public List<String> getTeams() {
+        return teams;
     }
 
     @Override

@@ -24,7 +24,7 @@ public class ProblemClickListener implements TreeSelectionListener {
         }
         Problem problem = (Problem) component;
         if (!problem.isLoaded()) {
-            problem.loadFrom(BackendManager.loadProblem(problem.getName(), Credentials.getInstance()));
+            problem.loadFrom(new BackendManager(Credentials.getInstance()).loadProblem(problem.getName()));
         }
         ExplorerManager.updateProblemPanel(project, problem);
     }

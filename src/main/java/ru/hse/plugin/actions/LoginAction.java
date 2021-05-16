@@ -28,7 +28,7 @@ public class LoginAction extends AnAction {
             login = dialog.getUsername();
             password = dialog.getPassword();
             rememberByDefault = dialog.isRememberPassword();
-            String token = BackendManager.login(login, password);
+            String token = new BackendManager(Credentials.getInstance()).login(login, password);
             if (token == null) {
                 NotificationUtils.showToolWindowMessage("Login failed", NotificationType.ERROR, e.getProject());
                 continue;

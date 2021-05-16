@@ -1,6 +1,9 @@
 package ru.hse.plugin.data;
 
+import com.google.api.client.util.Key;
+
 public class Team extends ContentHolder {
+    @Key
     private final String name;
 
     public Team(String name) {

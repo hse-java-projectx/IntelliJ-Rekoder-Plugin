@@ -6,6 +6,7 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
@@ -19,125 +20,134 @@ public class BackendManager {
     private static final HttpTransport TRANSPORT = new NetHttpTransport();
     private static final HttpRequestFactory REQUEST_FACTORY = TRANSPORT.createRequestFactory();
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
-    private static final String API_URL = "https://www.rekoder.xyz/";
-    private static final String FOLDERS_URL = API_URL + "users/${login}/folders";
+    private static final String REPLACEMENT = "${}";
+    private static final String API_URL = "https://api.rekoder.xyz/";
+    private final String USER_URL;
+    private static final String TEAMS_URL = API_URL + "teams/";
+    private static final String TEAM_FOLDERS_URL = TEAMS_URL + REPLACEMENT + "/folders/";
+    private static final String FOLDER_SUB_FOLDERS_URL = API_URL + "folders/" + REPLACEMENT + "/folders/";
+    private static final String FOLDER_PROBLEMS_URL = API_URL + "folders/" + REPLACEMENT + "/problems/";
+    private static final String PROBLEMS_URL = API_URL + "problems/";
+    private static final String SUBMISSIONS_URL = API_URL + "submissions/";
+    private static final String PROBLEM_SUBMISSIONS_URL = PROBLEMS_URL + REPLACEMENT + "/submissions/";
+    private final String USER_FOLDERS_URL;
+    private final String USER_PROBLEMS_URL;
+
+    private final Credentials credentials;
+
+    public BackendManager(Credentials credentials) {
+        this.credentials = credentials;
+        USER_URL = API_URL + "users/" + credentials.getLogin() + "/";
+        USER_FOLDERS_URL = USER_URL + "folders/";
+        USER_PROBLEMS_URL = USER_URL + "problems/";
+    }
 
     // returns token
     @Nullable
-    public static String login(String login, String password) {
+    public String login(String login, String password) {
         return "token";
     }
 
-    public static List<Team> getTeams(Credentials credentials) {
+    public List<Team> getTeams() {
         List<Team> list = new ArrayList<>();
-        Random rand = new Random();
-        int steps = rand.nextInt(10) + 1;
-        for (int k = 0; k < steps; k++) {
-            list.add(new Team("Team " + rand.nextInt()));
+        User user = getUser();
+        for (String teamName : user.getTeams()) {
+            list.add(getTeam(teamName));
         }
         return list;
     }
 
-    public static List<Folder> getRootFolders(Team team, Credentials credentials) {
+    public Team getTeam(String teamName) {
+        return getData(TEAMS_URL + teamName, Team.class);
+    }
+
+    public User getUser() {
+        return getData(USER_URL, User.class);
+    }
+
+    public List<Folder> getRootFolders(Team team) { // TODO
+        Folder[] folders = getData(TEAM_FOLDERS_URL.replace(REPLACEMENT, team.getName()), Folder[].class);
+        return Arrays.asList(folders);
+    }
+
+    public List<Folder> getPersonalRootFolders() {
         List<Folder> list = new ArrayList<>();
-        Random rand = new Random();
-        int steps = rand.nextInt(10) + 1;
-        for (int k = 0; k < steps; k++) {
-            list.add(new Folder("Folder" + rand.nextInt()));
-        }
+        list.add(getFolderWithAllProblems());
+        Folder[] folders = getData(USER_FOLDERS_URL, Folder[].class);
+        list.addAll(Arrays.asList(folders));
         return list;
     }
 
-    public static List<Folder> getPersonalRootFolders(Credentials credentials) {
-        List<Folder> list = new ArrayList<>();
-        Folder all = new Folder("All");
+    private Folder getFolderWithAllProblems() {
+        Folder all = new Folder("All", -1);
         all.setLoaded();
         getAllProblems().stream().peek(Problem::setLoaded).forEach(all::add);
-        list.add(all);
-        GenericUrl url = new GenericUrl(FOLDERS_URL.replace("${login}", credentials.getLogin()));
+        return all;
+    }
+
+    private List<Problem> getAllProblems() {
+        Problem[] problems = getData(USER_PROBLEMS_URL, Problem[].class);
+        return Arrays.asList(problems);
+    }
+
+    public List<TreeFile> loadFolder(String folderId) {
+        List<TreeFile> files = new ArrayList<>();
+        files.addAll(getFolderSubFolders(folderId));
+        files.addAll(getFolderProblems(folderId));
+        return files;
+    }
+
+    private List<Folder> getFolderSubFolders(String folderId) {
+        Folder[] folders = getData(FOLDER_SUB_FOLDERS_URL.replace(REPLACEMENT, folderId), Folder[].class);
+        return Arrays.asList(folders);
+    }
+
+    private List<Problem> getFolderProblems(String folderId) {
+        Problem[] problems = getData(FOLDER_PROBLEMS_URL.replace(REPLACEMENT, folderId), Problem[].class);
+        return Arrays.asList(problems);
+    }
+
+    public Problem loadProblem(String problemId) {
+        return getData(PROBLEMS_URL + problemId, Problem.class);
+    }
+
+    public Submission loadSubmission(String submissionId) {
+        return getData(SUBMISSIONS_URL + submissionId, Submission.class);
+    }
+
+    public List<Submission> getProblemSubmissions(Problem problem) {
+        Submission[] submissions = getData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), Submission[].class);
+        return Arrays.asList(submissions);
+    }
+
+    public void sendSubmission(Problem problem, Submission submission) {
+        sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission);
+    }
+
+    private <T> T getData(String URL, Class<T> tClass) {
+        GenericUrl url = new GenericUrl(URL);
         try {
             HttpRequest req = REQUEST_FACTORY.buildGetRequest(url);
             req.setParser(new JsonObjectParser(JSON_FACTORY));
             HttpResponse resp = req.execute();
-            Folder[] problems = resp.parseAs(Folder[].class);
-            list.addAll(Arrays.asList(problems));
+            //TODO: проверять status code
+            return resp.parseAs(tClass);
         } catch (IOException e) {
-            e.printStackTrace();
+            //TODO: нормальные исключения
+            throw new RuntimeException(e);
         }
-        return list;
     }
 
-    private static List<Problem> getAllProblems() {
-        GenericUrl url = new GenericUrl(API_URL + "users/Danil/problems");
-        HttpRequest req = null;
+    private void sendData(String URL, Object object) {
+        GenericUrl url = new GenericUrl(URL);
         try {
-            req = REQUEST_FACTORY.buildGetRequest(url);
-            req.setParser(new JsonObjectParser(JSON_FACTORY));
+            HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, new JsonHttpContent(JSON_FACTORY, object));
             HttpResponse resp = req.execute();
-            Problem[] problems = resp.parseAs(Problem[].class);
-            return Arrays.asList(problems);
+            //TODO: проверять status code
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            //TODO: нормальные исключения
+            throw new RuntimeException(e);
         }
-    }
-
-    public static List<TreeFile> loadFolder(String folderId, Credentials credentials) {
-        Random rand = new Random();
-        List<TreeFile> list = new ArrayList<>();
-        int steps = rand.nextInt(10) + 1;
-        for (int k = 0; k < steps; k++) {
-            list.add(new Folder("Folder" + rand.nextInt()));
-        }
-        steps = rand.nextInt(10) + 1;
-        for (int k = 0; k < steps; k++) {
-            Problem problem = new Problem();
-            problem.setName("Problem" + rand.nextInt());
-            list.add(problem);
-        }
-        return list;
-    }
-
-    public static Problem loadProblem(String problemId, Credentials credentials) {
-        Problem problem = new Problem();
-        problem.setName(problemId);
-        problem.setStatement("Diamond Miner is a game that is similar to Gold Miner, but there are $$$n$$$ miners instead of $$$1$$$ in this game. The mining area can be described as a plane. The $$$n$$$ miners can be regarded as $$$n$$$ points on the y-axis. There are $$$n$$$ diamond mines in the mining area. We can regard them as $$$n$$$ points on the x-axis. For some reason, no miners or diamond mines can be at the origin (point $$$(0, 0)$$$). Every miner should mine exactly one diamond mine. Every miner has a hook, which can be used to mine a diamond mine. If a miner at the point $$$(a,b)$$$ uses his hook to mine a diamond mine at the point $$$(c,d)$$$, he will spend $$$\\sqrt{(a-c)^2+(b-d)^2}$$$ energy to mine it (the distance between these points). The miners can't move or help each other. The object of this game is to minimize the sum of the energy that miners spend. Can you find this minimum?");
-        problem.setSource(getRandomString(15));
-        problem.setState(Problem.State.values()[rnd.nextInt(3)]);
-        problem.setTags(Arrays.asList(getRandomString(4), getRandomString(7)));
-        if (rnd.nextBoolean()) {
-            problem.setSubmissions(Collections.emptyList());
-        } else {
-            problem.setSubmissions(Collections.singletonList(loadSubmission("", credentials)));
-        }
-        return problem;
-    }
-
-    public static Submission loadSubmission(String submissionId, Credentials credentials) {
-        Submission submission = new Submission();
-        submission.setSourceCode("public class Main {\n" +
-                "    public static void main(String[]args){\n" +
-                "        \n" +
-                "    }\n" +
-                "}");
-        submission.setAuthor(credentials.getLogin());
-        submission.setName("1");
-        submission.setCompiler("gcc");
-        submission.setVerdict("WA");
-        submission.setMemoryConsumed("100");
-        submission.setTimeConsumed("3");
-        submission.setTests(Arrays.asList(new TestImpl("abc", "cba"), new TestImpl("aac", "caa")));
-        submission.setSent(true);
-        return submission;
-    }
-
-    public static List<String> getProblemCompilers(Problem problem, Credentials credentials) {
-        return Arrays.asList("gcc", "g++", "clang");
-    }
-
-    public static List<Submission> getProblemSubmissions(Problem problem, Credentials credentials) {
-        // or maybe List<String> where String = id of submission
-        return Collections.emptyList();
     }
 
     private static final Random rnd = new Random();

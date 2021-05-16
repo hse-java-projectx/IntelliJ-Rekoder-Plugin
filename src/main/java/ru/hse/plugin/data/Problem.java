@@ -9,6 +9,8 @@ import java.util.List;
 
 public class Problem extends TreeFile {
     @Key
+    protected final int id;
+    @Key
     protected String name = "";
     @Key
     protected String statement = "";
@@ -18,16 +20,16 @@ public class Problem extends TreeFile {
     protected List<String> tags = Collections.emptyList();
     @Key
     protected List<Submission> submissions = Collections.emptyList();
+    @Key
+    private List<TestImpl> tests = Collections.emptyList();
+
     protected boolean isLoaded = false;
 
-    public Problem() {
-
-    }
-
-    public Problem(String name, String statement, State state, int numberOfAttempts, String source, List<String> tags, List<Submission> submissions) {
+    public Problem(String name, String statement, State state, int numberOfAttempts, int id, String source, List<String> tags, List<Submission> submissions) {
         this.name = name;
         this.statement = statement;
         this.state = state;
+        this.id = id;
         this.source = source;
         this.tags = tags;
         this.submissions = submissions;
@@ -101,6 +103,18 @@ public class Problem extends TreeFile {
 
     public void setSubmissions(List<Submission> submissions) {
         this.submissions = submissions;
+    }
+
+    public List<TestImpl> getTests() {
+        return tests;
+    }
+
+    public void setTests(List<TestImpl> tests) {
+        this.tests = tests;
+    }
+
+    public int getId() {
+        return id;
     }
 
     @Override

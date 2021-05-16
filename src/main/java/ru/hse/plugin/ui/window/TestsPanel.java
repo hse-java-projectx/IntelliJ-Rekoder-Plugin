@@ -16,7 +16,6 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import com.intellij.diff.impl.DiffWindow;
 import icons.RekoderIcons;
-import jdk.internal.org.jline.utils.DiffHelper;
 import ru.hse.plugin.data.Test;
 import ru.hse.plugin.utils.StringUtils;
 
@@ -49,7 +48,7 @@ public class TestsPanel extends JPanel {
 
         newTestButton.setEnabled(false);
         newTestButton.addActionListener(e -> {
-            testsPanel.add(new TestPanel(project, testsPanel, "", "", true), 0);
+            testsPanel.add(new TestPanel(project, testsPanel, "", ""), 0);
             testsPanel.updateUI();
         });
 
@@ -67,11 +66,10 @@ public class TestsPanel extends JPanel {
         add(scrollPane);
     }
 
-    public void setTests(List<? extends Test> tests, boolean canChangeTests) {
+    public void setTests(List<? extends Test> tests) {
         testsPanel.removeAll();
-        tests.forEach(test -> testsPanel.add(new TestPanel(project, testsPanel, test.getInput(), test.getExpectedOutput(), canChangeTests)));
+        tests.forEach(test -> testsPanel.add(new TestPanel(project, testsPanel, test.getInput(), test.getExpectedOutput())));
         testsPanel.updateUI();
-        newTestButton.setEnabled(canChangeTests);
     }
 
     public List<Test> getTests() {
@@ -96,7 +94,7 @@ public class TestsPanel extends JPanel {
         JLabel label = new JLabel();
         private Status status = Status.NOT_TESTED;
 
-        public TestPanel(Project project, JPanel parent, String input, String output, boolean canChangeTest) {
+        public TestPanel(Project project, JPanel parent, String input, String output) {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
             setPreferredSize(new Dimension(200, 200));
@@ -106,10 +104,8 @@ public class TestsPanel extends JPanel {
             s2.setResizeEnabled(false);
 
             inputArea = new JBTextArea(input);
-            inputArea.setEditable(canChangeTest);
 //        inputArea.setMinimumSize(new Dimension(200, 50));
             outputArea = new JBTextArea(output);
-            outputArea.setEditable(canChangeTest);
 //        outputArea.setMinimumSize(new Dimension(200, 50));
             button = new JButton(RekoderIcons.DELETE_TEST) {
                 @Override
@@ -119,7 +115,6 @@ public class TestsPanel extends JPanel {
                     return new Dimension (s,s);
                 }
             };
-            button.setEnabled(canChangeTest);
             JPanel s3 = new JPanel(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
 
