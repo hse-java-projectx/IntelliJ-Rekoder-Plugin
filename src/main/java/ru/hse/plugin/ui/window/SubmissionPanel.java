@@ -20,6 +20,7 @@ import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
+import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.ui.listeners.TestListener;
 import ru.hse.plugin.utils.ComponentUtils;
@@ -257,10 +258,14 @@ public class SubmissionPanel extends JPanel {
         test.addActionListener(new TestListener(project));
 
         reloadSubmission.addActionListener(a -> {
-            Submission newVersion = new BackendManager(Credentials.getInstance()).loadSubmission(submission.getName());
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                setSubmission(newVersion);
-            });
+            try {
+                Submission newVersion = new BackendManager(Credentials.getInstance()).loadSubmission(submission.getName());
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    setSubmission(newVersion);
+                });
+            } catch (UnauthorizedException ex) {
+                NotificationUtils.showAuthorisationFailedNotification(project);
+            }
         });
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));

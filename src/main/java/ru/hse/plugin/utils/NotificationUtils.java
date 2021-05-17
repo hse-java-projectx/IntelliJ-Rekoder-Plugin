@@ -14,4 +14,8 @@ public class NotificationUtils {
                 createNotification(message, type);
         Notifications.Bus.notify(notification, project);
     }
+
+    public static void showAuthorisationFailedNotification(Project project) {
+        showToolWindowMessage("Authentication failed", NotificationType.ERROR, project);
+    }
 }

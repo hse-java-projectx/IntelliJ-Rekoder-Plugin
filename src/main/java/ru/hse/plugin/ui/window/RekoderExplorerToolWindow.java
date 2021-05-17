@@ -23,7 +23,6 @@ import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
 import javax.swing.tree.TreeSelectionModel;
-import java.awt.event.*;
 
 public class RekoderExplorerToolWindow extends SimpleToolWindowPanel implements DataProvider {
     private Tree problemsTree;
@@ -72,7 +71,7 @@ public class RekoderExplorerToolWindow extends SimpleToolWindowPanel implements 
         problemsTree = new Tree();
         problemsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(problemsTree);
-        problemsTree.addTreeWillExpandListener(new FolderClickListener());
+        problemsTree.addTreeWillExpandListener(new FolderClickListener(project));
         problemsTree.addTreeSelectionListener(new ProblemClickListener(project));
         problemsTree.setRootVisible(false);
         problemsTree.getEmptyText().clear().appendLine("Please Login to view problems");

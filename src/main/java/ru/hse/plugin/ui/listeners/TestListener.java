@@ -24,10 +24,10 @@ public class TestListener implements ActionListener {
         this.project = project;
     }
 
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        List<Test> list = ProblemManager.getTests(project);
+        ProblemManager problemManager = new ProblemManager(project);
+        List<Test> list = problemManager.getTests();
         if (list.isEmpty()) return;
         DefaultExecutor runExecutor = new DefaultExecutor();
         ProgressManager progressManager = new ProgressManagerImpl();

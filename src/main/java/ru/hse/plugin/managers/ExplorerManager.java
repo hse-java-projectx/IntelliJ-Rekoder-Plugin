@@ -6,6 +6,7 @@ import com.intellij.ui.CollectionListModel;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.treeStructure.Tree;
 import ru.hse.plugin.data.*;
+import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.ui.window.ProblemPanel;
 import ru.hse.plugin.ui.window.RekoderToolWindowFactory;
 import ru.hse.plugin.utils.DataKeys;
@@ -18,7 +19,19 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ExplorerManager {
-    public static TreeModel getContentHolderTreeModel(ContentHolder contentHolder) {
+    private final Project project;
+
+    public ExplorerManager(Project project) {
+        this.project = project;
+    }
+
+    public void clearEverything() {
+        clearProblemPanel();
+        clearProblemsTree();
+        clearTeamsList();
+    }
+
+    public TreeModel getContentHolderTreeModel(ContentHolder contentHolder) throws UnauthorizedException {
         if (contentHolder.getProblemsModel() != null) {
             return contentHolder.getProblemsModel();
         }
@@ -39,16 +52,16 @@ public class ExplorerManager {
     }
 
 
-    public static void updateProblemsTree(Project project, TreeModel model) {
-        Tree tree = getProblemsTree(project);
+    public void updateProblemsTree(TreeModel model) {
+        Tree tree = getProblemsTree();
         ThreadUtils.runWriteAction(() -> {
             tree.setModel(model);
             tree.updateUI();
         });
     }
 
-    public static void clearProblemsTree(Project project) {
-        Tree tree = getProblemsTree(project);
+    public void clearProblemsTree() {
+        Tree tree = getProblemsTree();
         ThreadUtils.runWriteAction(() -> {
             DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
             model.setRoot(new DefaultMutableTreeNode("Root"));
@@ -59,9 +72,9 @@ public class ExplorerManager {
 
 
 
-    public static void updateTeamsList(Project project) {
+    public void updateTeamsList() throws UnauthorizedException {
         BackendManager backendManager = new BackendManager(Credentials.getInstance());
-        JBList<ContentHolder> teams = getTeamsList(project);
+        JBList<ContentHolder> teams = getTeamsList();
         List<Team> teamsList = backendManager.getTeams();
         CollectionListModel<ContentHolder> model = new CollectionListModel<>();
         User user = backendManager.getUser();
@@ -72,11 +85,11 @@ public class ExplorerManager {
             teams.setSelectedIndex(0);
             teams.updateUI();
         });
-        updateProblemsTree(project, getContentHolderTreeModel(user));
+        updateProblemsTree(getContentHolderTreeModel(user));
     }
 
-    public static void clearTeamsList(Project project) {
-        JBList<ContentHolder> teams = getTeamsList(project);
+    public void clearTeamsList() {
+        JBList<ContentHolder> teams = getTeamsList();
         ThreadUtils.runWriteAction(() -> {
             CollectionListModel<ContentHolder> model = (CollectionListModel<ContentHolder>) teams.getModel();
             model.removeAll();
@@ -87,16 +100,16 @@ public class ExplorerManager {
 
 
 
-    public static void updateProblemPanel(Project project, Problem problem) {
-        ProblemPanel problemPanel = getProblemPanel(project);
+    public void updateProblemPanel(Problem problem) {
+        ProblemPanel problemPanel = getProblemPanel();
         ThreadUtils.runWriteAction(() -> {
             problemPanel.setProblem(problem);
             problemPanel.updateUI();
         });
     }
 
-    public static void clearProblemPanel(Project project) {
-        ProblemPanel problemPanel = getProblemPanel(project);
+    public void clearProblemPanel() {
+        ProblemPanel problemPanel = getProblemPanel();
         ThreadUtils.runWriteAction(() -> {
             problemPanel.clearProblem();
             problemPanel.updateUI();
@@ -104,19 +117,19 @@ public class ExplorerManager {
     }
 
 
-    private static ProblemPanel getProblemPanel(Project project) {
+    private ProblemPanel getProblemPanel() {
         AtomicReference<ProblemPanel> problemPanel = new AtomicReference<>();
         ReadAction.run(() -> problemPanel.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEM_PANEL)));
         return problemPanel.get();
     }
 
-    private static JBList<ContentHolder> getTeamsList(Project project) {
+    private JBList<ContentHolder> getTeamsList() {
         AtomicReference<JBList<ContentHolder>> list = new AtomicReference<>();
         ReadAction.run(() -> list.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.TEAMS_LIST)));
         return list.get();
     }
 
-    private static Tree getProblemsTree(Project project) {
+    private Tree getProblemsTree() {
         AtomicReference<Tree> tree = new AtomicReference<>();
         ReadAction.run(() -> tree.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEMS_TREE)));
         return tree.get();

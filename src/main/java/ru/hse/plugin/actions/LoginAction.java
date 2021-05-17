@@ -3,10 +3,15 @@ package ru.hse.plugin.actions;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.vcsUtil.AuthDialog;
 import org.jetbrains.annotations.NotNull;
 
 import ru.hse.plugin.data.Credentials;
+import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.managers.ExplorerManager;
 import ru.hse.plugin.managers.ProblemManager;
@@ -28,7 +33,21 @@ public class LoginAction extends AnAction {
             login = dialog.getUsername();
             password = dialog.getPassword();
             rememberByDefault = dialog.isRememberPassword();
-            String token = new BackendManager(Credentials.getInstance()).login(login, password);
+            ProgressManager progressManager = new ProgressManagerImpl();
+            String token = null;
+            try {
+                String finalLogin = login;
+                String finalPassword = password;
+                token =  progressManager.run(new Task.WithResult<String, Exception>(e.getProject(), "Login", true) {
+                    @Override
+                    protected String compute(@NotNull ProgressIndicator indicator) {
+                        return new BackendManager(Credentials.getInstance()).login(finalLogin, finalPassword);
+                    }
+                });
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+
             if (token == null) {
                 NotificationUtils.showToolWindowMessage("Login failed", NotificationType.ERROR, e.getProject());
                 continue;
@@ -36,10 +55,9 @@ public class LoginAction extends AnAction {
             credentials.setLogin(dialog.getUsername());
             credentials.setToken(dialog.getPassword());
 
-            ExplorerManager.updateTeamsList(e.getProject());
-            ExplorerManager.clearProblemPanel(e.getProject());
-            ProblemManager.clearProblem(e.getProject());
-            ProblemManager.clearTests(e.getProject());
+            RefreshAction refreshAction = new RefreshAction();
+            refreshAction.actionPerformed(e);
+
             return;
         }
     }

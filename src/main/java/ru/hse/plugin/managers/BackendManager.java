@@ -1,20 +1,18 @@
 package ru.hse.plugin.managers;
 
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
 import ru.hse.plugin.data.*;
+import ru.hse.plugin.exceptions.UnauthorizedException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class BackendManager {
     private static final HttpTransport TRANSPORT = new NetHttpTransport();
@@ -32,6 +30,7 @@ public class BackendManager {
     private static final String PROBLEM_SUBMISSIONS_URL = PROBLEMS_URL + REPLACEMENT + "/submissions/";
     private final String USER_FOLDERS_URL;
     private final String USER_PROBLEMS_URL;
+    private static final int UNAUTHORIZED_CODE = 401;
 
     private final Credentials credentials;
 
@@ -45,10 +44,15 @@ public class BackendManager {
     // returns token
     @Nullable
     public String login(String login, String password) {
+        try {
+            TimeUnit.SECONDS.sleep(4);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return "token";
     }
 
-    public List<Team> getTeams() {
+    public List<Team> getTeams() throws UnauthorizedException {
         List<Team> list = new ArrayList<>();
         User user = getUser();
         for (String teamName : user.getTeams()) {
@@ -57,20 +61,20 @@ public class BackendManager {
         return list;
     }
 
-    public Team getTeam(String teamName) {
+    public Team getTeam(String teamName) throws UnauthorizedException {
         return getData(TEAMS_URL + teamName, Team.class);
     }
 
-    public User getUser() {
+    public User getUser() throws UnauthorizedException {
         return getData(USER_URL, User.class);
     }
 
-    public List<Folder> getRootFolders(Team team) { // TODO
+    public List<Folder> getRootFolders(Team team) throws UnauthorizedException { // TODO
         Folder[] folders = getData(TEAM_FOLDERS_URL.replace(REPLACEMENT, team.getName()), Folder[].class);
         return Arrays.asList(folders);
     }
 
-    public List<Folder> getPersonalRootFolders() {
+    public List<Folder> getPersonalRootFolders() throws UnauthorizedException {
         List<Folder> list = new ArrayList<>();
         list.add(getFolderWithAllProblems());
         Folder[] folders = getData(USER_FOLDERS_URL, Folder[].class);
@@ -78,44 +82,44 @@ public class BackendManager {
         return list;
     }
 
-    private Folder getFolderWithAllProblems() {
+    private Folder getFolderWithAllProblems() throws UnauthorizedException {
         Folder all = new Folder("All", -1);
         all.setLoaded();
         getAllProblems().stream().peek(Problem::setLoaded).forEach(all::add);
         return all;
     }
 
-    private List<Problem> getAllProblems() {
+    private List<Problem> getAllProblems() throws UnauthorizedException {
         Problem[] problems = getData(USER_PROBLEMS_URL, Problem[].class);
         return Arrays.asList(problems);
     }
 
-    public List<TreeFile> loadFolder(String folderId) {
+    public List<TreeFile> loadFolder(String folderId) throws UnauthorizedException {
         List<TreeFile> files = new ArrayList<>();
         files.addAll(getFolderSubFolders(folderId));
         files.addAll(getFolderProblems(folderId));
         return files;
     }
 
-    private List<Folder> getFolderSubFolders(String folderId) {
+    private List<Folder> getFolderSubFolders(String folderId) throws UnauthorizedException {
         Folder[] folders = getData(FOLDER_SUB_FOLDERS_URL.replace(REPLACEMENT, folderId), Folder[].class);
         return Arrays.asList(folders);
     }
 
-    private List<Problem> getFolderProblems(String folderId) {
+    private List<Problem> getFolderProblems(String folderId) throws UnauthorizedException {
         Problem[] problems = getData(FOLDER_PROBLEMS_URL.replace(REPLACEMENT, folderId), Problem[].class);
         return Arrays.asList(problems);
     }
 
-    public Problem loadProblem(String problemId) {
+    public Problem loadProblem(String problemId) throws UnauthorizedException {
         return getData(PROBLEMS_URL + problemId, Problem.class);
     }
 
-    public Submission loadSubmission(String submissionId) {
+    public Submission loadSubmission(String submissionId) throws UnauthorizedException {
         return getData(SUBMISSIONS_URL + submissionId, Submission.class);
     }
 
-    public List<Submission> getProblemSubmissions(Problem problem) {
+    public List<Submission> getProblemSubmissions(Problem problem) throws UnauthorizedException {
         Submission[] submissions = getData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), Submission[].class);
         return Arrays.asList(submissions);
     }
@@ -124,7 +128,7 @@ public class BackendManager {
         sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission);
     }
 
-    private <T> T getData(String URL, Class<T> tClass) {
+    private <T> T getData(String URL, Class<T> tClass) throws UnauthorizedException {
         GenericUrl url = new GenericUrl(URL);
         try {
             HttpRequest req = REQUEST_FACTORY.buildGetRequest(url);
@@ -132,8 +136,13 @@ public class BackendManager {
             HttpResponse resp = req.execute();
             //TODO: проверять status code
             return resp.parseAs(tClass);
+        } catch (HttpResponseException ex) {
+            ex.printStackTrace();
+            if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
+                throw new UnauthorizedException();
+            }
+            throw new RuntimeException(ex);
         } catch (IOException e) {
-            //TODO: нормальные исключения
             throw new RuntimeException(e);
         }
     }

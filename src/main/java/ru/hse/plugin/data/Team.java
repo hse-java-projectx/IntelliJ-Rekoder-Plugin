@@ -4,7 +4,11 @@ import com.google.api.client.util.Key;
 
 public class Team extends ContentHolder {
     @Key
-    private final String name;
+    private String name;
+
+    public Team() {
+
+    }
 
     public Team(String name) {
         this.name = name;

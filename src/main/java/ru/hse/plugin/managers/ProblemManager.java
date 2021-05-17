@@ -14,42 +14,53 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ProblemManager {
-    public static List<Test> getTests(Project project) {
-        TestsPanel testsPanel = getTestsPanel(project);
+    private final Project project;
+
+    public ProblemManager(Project project) {
+        this.project = project;
+    }
+
+    public void clearEverything() {
+        clearProblem();
+        clearTests();
+    }
+
+    public List<Test> getTests() {
+        TestsPanel testsPanel = getTestsPanel();
         AtomicReference<List<Test>> tests = new AtomicReference<>();
         ThreadUtils.runWriteAction(() -> tests.set(testsPanel.getTests()));
         return tests.get();
     }
 
-    public static void clearTests(Project project) {
-        TestsPanel testsPanel = getTestsPanel(project);
+    public void clearTests() {
+        TestsPanel testsPanel = getTestsPanel();
         ThreadUtils.runWriteAction(testsPanel::clearTests);
     }
 
-    public static void setTests(Project project, List<? extends Test> tests) {
-        TestsPanel testsPanel = getTestsPanel(project);
+    public void setTests(List<? extends Test> tests) {
+        TestsPanel testsPanel = getTestsPanel();
         ThreadUtils.runWriteAction(() -> testsPanel.setTests(tests));
     }
 
-    public static void clearProblem(Project project) {
-        SubmissionPanel submissionPanel = getSubmissionPanel(project);
+    public void clearProblem() {
+        SubmissionPanel submissionPanel = getSubmissionPanel();
         ThreadUtils.runWriteAction(submissionPanel::clearProblem);
     }
 
-    public static void setProblem(Project project, Problem problem) {
-        SubmissionPanel submissionPanel = getSubmissionPanel(project);
+    public void setProblem(Problem problem) {
+        SubmissionPanel submissionPanel = getSubmissionPanel();
         ThreadUtils.runWriteAction(() -> submissionPanel.setProblem(problem));
     }
 
 
 
-    private static TestsPanel getTestsPanel(Project project) {
+    private TestsPanel getTestsPanel() {
         AtomicReference<TestsPanel> testsPanel = new AtomicReference<>();
         ReadAction.run(() -> testsPanel.set(RekoderToolWindowFactory.getProblemDataContext(project).getData(DataKeys.TESTS_PANEL)));
         return testsPanel.get();
     }
 
-    private static SubmissionPanel getSubmissionPanel(Project project) {
+    private SubmissionPanel getSubmissionPanel() {
         AtomicReference<SubmissionPanel> submissionPanel = new AtomicReference<>();
         ReadAction.run(() -> submissionPanel.set(RekoderToolWindowFactory.getProblemDataContext(project).getData(DataKeys.SUBMISSION_PANEL)));
         return submissionPanel.get();

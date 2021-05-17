@@ -2,8 +2,6 @@ package ru.hse.plugin.data;
 
 import com.google.api.client.util.Key;
 
-import java.util.List;
-
 public class Folder extends TreeFile {
     @Key
     private String name;
@@ -32,6 +30,10 @@ public class Folder extends TreeFile {
 
     public String getName() {
         return name;
+    }
+
+    public String getId() {
+        return String.valueOf(id);
     }
 
     @Override

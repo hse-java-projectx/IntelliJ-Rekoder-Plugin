@@ -18,11 +18,10 @@ public class LogoutAction extends AnAction {
             NotificationUtils.showToolWindowMessage("You are not logged in", NotificationType.WARNING, e.getProject());
             return;
         }
-        ExplorerManager.clearProblemsTree(e.getProject());
-        ExplorerManager.clearTeamsList(e.getProject());
-        ExplorerManager.clearProblemPanel(e.getProject());
-        ProblemManager.clearProblem(e.getProject());
-        ProblemManager.clearTests(e.getProject());
+        ExplorerManager explorerManager = new ExplorerManager(e.getProject());
+        ProblemManager problemManager = new ProblemManager(e.getProject());
+        explorerManager.clearEverything();
+        problemManager.clearEverything();
         credentials.setToken(null);
         NotificationUtils.showToolWindowMessage("Logged out successfully", NotificationType.INFORMATION, e.getProject());
     }

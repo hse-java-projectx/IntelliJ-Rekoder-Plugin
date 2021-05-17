@@ -69,6 +69,7 @@ public class TestsPanel extends JPanel {
     public void setTests(List<? extends Test> tests) {
         testsPanel.removeAll();
         tests.forEach(test -> testsPanel.add(new TestPanel(project, testsPanel, test.getInput(), test.getExpectedOutput())));
+        newTestButton.setEnabled(true);
         testsPanel.updateUI();
     }
 

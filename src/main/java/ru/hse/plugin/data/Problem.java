@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Problem extends TreeFile {
     @Key
-    protected final int id;
+    protected int id;
     @Key
     protected String name = "";
     @Key
@@ -24,6 +24,10 @@ public class Problem extends TreeFile {
     private List<TestImpl> tests = Collections.emptyList();
 
     protected boolean isLoaded = false;
+
+    public Problem() {
+
+    }
 
     public Problem(String name, String statement, State state, int numberOfAttempts, int id, String source, List<String> tags, List<Submission> submissions) {
         this.name = name;

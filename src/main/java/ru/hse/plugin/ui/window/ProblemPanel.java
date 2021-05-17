@@ -162,7 +162,8 @@ public class ProblemPanel extends JPanel {
         startSolving.addActionListener(a -> {
             Application application = ApplicationManager.getApplication();
             application.runWriteAction(() -> {
-                ProblemManager.setProblem(project, getProblem());
+                ProblemManager problemManager = new ProblemManager(project);
+                problemManager.setProblem(getProblem());
                 ContentManager contentManager = toolWindow.getContentManager();
                 contentManager.setSelectedContent(contentManager.getContent(1));
             });
