@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.utils.PropertiesUtils;
 
 public class WebSiteAction extends AnAction {
-    private static final String URL = new PropertiesUtils("/constants/constants.propertgies").getKey("siteUrl", "");
+    private static final String URL = new PropertiesUtils("/constants/constants.properties").getKey("siteUrl", "");
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {

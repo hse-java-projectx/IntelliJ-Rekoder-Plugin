@@ -64,7 +64,7 @@ public class RekoderExplorerToolWindow extends SimpleToolWindowPanel implements 
         teams = new JBList<>(teamsModel);
         new ListSpeedSearch<>(teams);
         teams.setCellRenderer(new TeamsListRenderer());
-        teams.setEmptyText("Teams");
+        teams.setEmptyText("Please login");
         teams.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         teams.addListSelectionListener(new ContentHolderClickListener(project));
 
@@ -74,7 +74,7 @@ public class RekoderExplorerToolWindow extends SimpleToolWindowPanel implements 
         problemsTree.addTreeWillExpandListener(new FolderClickListener(project));
         problemsTree.addTreeSelectionListener(new ProblemClickListener(project));
         problemsTree.setRootVisible(false);
-        problemsTree.getEmptyText().clear().appendLine("Please Login to view problems");
+        problemsTree.getEmptyText().clear().appendLine("Problems tree");
         problemsTree.setCellRenderer(new ProblemsTreeRenderer());
 
         JBSplitter horizontalSplitter = new JBSplitter(false, 0.6f);

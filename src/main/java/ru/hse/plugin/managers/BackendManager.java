@@ -8,6 +8,7 @@ import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
 import ru.hse.plugin.data.*;
 import ru.hse.plugin.exceptions.UnauthorizedException;
+import ru.hse.plugin.utils.PropertiesUtils;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -20,10 +21,11 @@ public class BackendManager {
     private static final HttpRequestFactory REQUEST_FACTORY = TRANSPORT.createRequestFactory();
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private static final String REPLACEMENT = "${}";
-    private static final String API_URL = "https://api.rekoder.xyz/";
+    private static final String API_URL = new PropertiesUtils("/constants/constants.properties").getKey("apiUrl", "");
     private final String USER_URL;
     private static final String TEAMS_URL = API_URL + "teams/";
     private static final String TEAM_FOLDERS_URL = TEAMS_URL + REPLACEMENT + "/folders/";
+    private static final String TEAM_PROBLEMS_URL = TEAMS_URL + REPLACEMENT + "/problems/";
     private static final String FOLDER_SUB_FOLDERS_URL = API_URL + "folders/" + REPLACEMENT + "/folders/";
     private static final String FOLDER_PROBLEMS_URL = API_URL + "folders/" + REPLACEMENT + "/problems/";
     private static final String PROBLEMS_URL = API_URL + "problems/";
@@ -70,9 +72,12 @@ public class BackendManager {
         return getData(USER_URL, User.class);
     }
 
-    public List<Folder> getRootFolders(Team team) throws UnauthorizedException { // TODO
+    public List<Folder> getRootFolders(Team team) throws UnauthorizedException {
+        List<Folder> list = new ArrayList<>();
+        list.add(getFolderWithAllProblems(team));
         Folder[] folders = getData(TEAM_FOLDERS_URL.replace(REPLACEMENT, team.getName()), Folder[].class);
-        return Arrays.asList(folders);
+        list.addAll(Arrays.asList(folders));
+        return list;
     }
 
     public List<Folder> getPersonalRootFolders() throws UnauthorizedException {
@@ -92,8 +97,25 @@ public class BackendManager {
         return all;
     }
 
+    private Folder getFolderWithAllProblems(Team team) throws UnauthorizedException {
+        Folder all = new Folder("All", -1);
+        all.setLoaded();
+        List<Problem> allProblems = getAllProblems(team);
+        saveProblemsToPool(allProblems);
+        getProblemsReferences(allProblems).forEach(all::add);
+        return all;
+    }
+
     private List<Problem> getAllProblems() throws UnauthorizedException {
         Problem[] problems = getData(USER_PROBLEMS_URL, Problem[].class);
+        for (Problem problem : problems) {
+            problem.setSubmissions(getProblemSubmissions(problem));
+        }
+        return Arrays.asList(problems);
+    }
+
+    private List<Problem> getAllProblems(Team team) throws UnauthorizedException {
+        Problem[] problems = getData(TEAM_PROBLEMS_URL.replace(REPLACEMENT, team.getName()), Problem[].class);
         for (Problem problem : problems) {
             problem.setSubmissions(getProblemSubmissions(problem));
         }

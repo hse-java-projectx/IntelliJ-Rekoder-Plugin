@@ -15,16 +15,15 @@ public class Problem {
     private String name = "";
     @Key
     private String statement = "";
-    private State state = State.NOT_STARTED;
     private String source = "";
     @Key
     private List<String> tags = Collections.emptyList();
-
-    private List<Submission> submissions = Collections.emptyList();
     @Key
     private List<TestImpl> tests = Collections.emptyList();
     @Key
     private int numberOfSuccessfulSubmissions = 0;
+
+    private List<Submission> submissions = Collections.emptyList();
 
     public Problem() {
 
@@ -35,7 +34,13 @@ public class Problem {
     }
 
     public State getState() {
-        return state;
+        if (submissions.isEmpty()) {
+            return State.NOT_STARTED;
+        }
+        if (numberOfSuccessfulSubmissions > 0) {
+            return State.PASSED;
+        }
+        return State.NOT_PASSED;
     }
 
     public int getNumberOfAttempts() {

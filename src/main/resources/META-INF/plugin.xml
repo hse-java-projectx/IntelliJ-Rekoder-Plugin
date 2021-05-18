@@ -17,6 +17,8 @@
 
         <applicationService
                 serviceImplementation="ru.hse.plugin.data.Credentials"/>
+        <applicationService
+                serviceImplementation="ru.hse.plugin.data.Commands"/>
     </extensions>
 
     <actions>
@@ -32,6 +34,9 @@
         <action id="rekoder.WebSiteAction" class="ru.hse.plugin.actions.WebSiteAction"
                 text="WebSite" description="Open Rekoder webSite" icon="RekoderIcons.WEB">
         </action>
+        <action id="rekoder.CommandsAction" class="ru.hse.plugin.actions.CommandsAction"
+                text="Commands" description="Edit commands" icon="RekoderIcons.COMMANDS">
+        </action>
 
 
         <group id="rekoder.MainWindowToolbar">
@@ -41,6 +46,8 @@
             <reference id="rekoder.RefreshAction"/>
             <separator/>
             <reference id="rekoder.WebSiteAction"/>
+            <separator/>
+            <reference id="rekoder.CommandsAction"/>
         </group>
 
     </actions>

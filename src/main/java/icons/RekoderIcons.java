@@ -16,4 +16,5 @@ public interface RekoderIcons {
     Icon WEB = IconLoader.getIcon("/icons/web.svg");
     Icon DELETE_TEST = IconLoader.getIcon("/icons/delete.svg");
     Icon DIFF = IconLoader.getIcon("/icons/diff.svg");
+    Icon COMMANDS = IconLoader.getIcon("/icons/commands.svg");
 }

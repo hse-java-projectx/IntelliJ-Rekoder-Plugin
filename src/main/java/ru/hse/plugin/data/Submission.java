@@ -89,6 +89,9 @@ public class Submission {
         return String.valueOf(id);
     }
 
+    public void setOrder(String order) {
+        this.order = order;
+    }
 
     public void setOrder(int order) {
         this.order = String.valueOf(order);

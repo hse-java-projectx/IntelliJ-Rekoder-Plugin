@@ -85,7 +85,7 @@ public class SubmissionPanel extends JPanel {
         submissions.setModel(new DefaultComboBoxModel<>());
         Submission newSubmission = new Submission();
         newSubmission.setSent(false);
-        newSubmission.setOrder(currentProblem.getSubmissions().size() + 1);
+        newSubmission.setOrder("new");
         newSubmission.setAuthor(Credentials.getInstance().getLogin());
         if (!currentProblem.getSubmissions().isEmpty()) {
             Submission lastSubmission = currentProblem.getSubmissions().get(currentProblem.getSubmissions().size() - 1);
