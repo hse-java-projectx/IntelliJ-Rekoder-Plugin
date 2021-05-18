@@ -345,6 +345,11 @@ public class SubmissionPanel extends JPanel {
                         BackendManager backendManager = new BackendManager(Credentials.getInstance());
                         try {
                             backendManager.sendSubmission(problem, submission);
+                            ThreadUtils.runWriteAction(() -> {
+                                submission.setSent(true);
+                                problem.getSubmissions().add(submission);
+                                setCurrentProblem(problem);
+                            });
                         } catch (UnauthorizedException unauthorizedException) {
                             NotificationUtils.showAuthorisationFailedNotification(project);
                         }
