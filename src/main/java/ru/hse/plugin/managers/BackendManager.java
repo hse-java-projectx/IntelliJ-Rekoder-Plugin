@@ -133,7 +133,7 @@ public class BackendManager {
 
     public List<Submission> getProblemSubmissions(Problem problem) throws UnauthorizedException {
         Submission[] submissions = getData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), Submission[].class);
-        return new ArrayList<>(Arrays.asList(submissions));
+        return Arrays.asList(submissions);
     }
 
     public void sendSubmission(Problem problem, Submission submission) throws UnauthorizedException {

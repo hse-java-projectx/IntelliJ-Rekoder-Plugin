@@ -4,6 +4,7 @@ import com.google.api.client.util.Key;
 import com.intellij.ui.JBColor;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class Problem {
     }
 
     public void setSubmissions(List<Submission> submissions) {
-        this.submissions = submissions;
+        this.submissions = new ArrayList<>(submissions);
     }
 
     public int getId() {

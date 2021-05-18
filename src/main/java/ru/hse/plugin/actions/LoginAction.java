@@ -7,26 +7,28 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
+import com.intellij.openapi.project.Project;
 import com.intellij.vcsUtil.AuthDialog;
 import org.jetbrains.annotations.NotNull;
 
 import ru.hse.plugin.data.Credentials;
-import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
-import ru.hse.plugin.managers.ExplorerManager;
-import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.utils.NotificationUtils;
 
 
 public class LoginAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        Project project = e.getProject();
+        if (project == null) {
+            return;
+        }
         Credentials credentials = Credentials.getInstance();
         String login = credentials.getLogin();
         String password = null;
         boolean rememberByDefault = true;
         while (true) {
-            AuthDialog dialog = new AuthDialog(e.getProject(), "Login", "Login to Rekoder", login, password, rememberByDefault);
+            AuthDialog dialog = new AuthDialog(project, "Login", "Login to Rekoder", login, password, rememberByDefault);
             if (!dialog.showAndGet()) {
                 return;
             }
@@ -38,7 +40,7 @@ public class LoginAction extends AnAction {
             try {
                 String finalLogin = login;
                 String finalPassword = password;
-                token =  progressManager.run(new Task.WithResult<String, Exception>(e.getProject(), "Login", true) {
+                token =  progressManager.run(new Task.WithResult<String, Exception>(project, "Login", true) {
                     @Override
                     protected String compute(@NotNull ProgressIndicator indicator) {
                         return new BackendManager(Credentials.getInstance()).login(finalLogin, finalPassword);
@@ -49,7 +51,7 @@ public class LoginAction extends AnAction {
             }
 
             if (token == null) {
-                NotificationUtils.showToolWindowMessage("Login failed", NotificationType.ERROR, e.getProject());
+                NotificationUtils.showToolWindowMessage("Login failed", NotificationType.ERROR, project);
                 continue;
             }
             credentials.setLogin(dialog.getUsername());
