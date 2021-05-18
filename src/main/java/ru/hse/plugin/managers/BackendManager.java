@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class BackendManager {
     private static final HttpTransport TRANSPORT = new NetHttpTransport();
@@ -85,19 +86,26 @@ public class BackendManager {
     private Folder getFolderWithAllProblems() throws UnauthorizedException {
         Folder all = new Folder("All", -1);
         all.setLoaded();
-        getAllProblems().stream().peek(Problem::setLoaded).forEach(all::add);
+        List<Problem> allProblems = getAllProblems();
+        saveProblemsToPool(allProblems);
+        getProblemsReferences(allProblems).forEach(all::add);
         return all;
     }
 
     private List<Problem> getAllProblems() throws UnauthorizedException {
         Problem[] problems = getData(USER_PROBLEMS_URL, Problem[].class);
+        for (Problem problem : problems) {
+            problem.setSubmissions(getProblemSubmissions(problem));
+        }
         return Arrays.asList(problems);
     }
 
     public List<TreeFile> loadFolder(String folderId) throws UnauthorizedException {
         List<TreeFile> files = new ArrayList<>();
         files.addAll(getFolderSubFolders(folderId));
-        files.addAll(getFolderProblems(folderId));
+        List<Problem> problems = getFolderProblems(folderId);
+        saveProblemsToPool(problems);
+        files.addAll(getProblemsReferences(problems));
         return files;
     }
 
@@ -108,10 +116,14 @@ public class BackendManager {
 
     private List<Problem> getFolderProblems(String folderId) throws UnauthorizedException {
         Problem[] problems = getData(FOLDER_PROBLEMS_URL.replace(REPLACEMENT, folderId), Problem[].class);
+        for (Problem problem : problems) {
+            problem.setSubmissions(getProblemSubmissions(problem));
+        }
         return Arrays.asList(problems);
     }
 
-    public Problem loadProblem(String problemId) throws UnauthorizedException {
+
+    private Problem loadProblem(String problemId) throws UnauthorizedException {
         return getData(PROBLEMS_URL + problemId, Problem.class);
     }
 
@@ -124,8 +136,18 @@ public class BackendManager {
         return Arrays.asList(submissions);
     }
 
-    public void sendSubmission(Problem problem, Submission submission) {
+    public void sendSubmission(Problem problem, Submission submission) throws UnauthorizedException {
+        System.out.println("Sending");
         sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission);
+    }
+
+    private void saveProblemsToPool(Iterable<Problem> iterable) {
+        ProblemPool problemPool = ProblemPool.getInstance();
+        iterable.forEach(problemPool::addProblem);
+    }
+
+    private List<ProblemReference> getProblemsReferences(List<Problem> list) {
+        return list.stream().map(ProblemReference::new).collect(Collectors.toList());
     }
 
     private <T> T getData(String URL, Class<T> tClass) throws UnauthorizedException {
@@ -142,30 +164,25 @@ public class BackendManager {
                 throw new UnauthorizedException();
             }
             throw new RuntimeException(ex);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
-    private void sendData(String URL, Object object) {
+    private void sendData(String URL, Object object) throws UnauthorizedException {
         GenericUrl url = new GenericUrl(URL);
         try {
             HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, new JsonHttpContent(JSON_FACTORY, object));
             HttpResponse resp = req.execute();
             //TODO: проверять status code
-        } catch (IOException e) {
+        } catch (HttpResponseException ex) {
+            if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
+                throw new UnauthorizedException();
+            }
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
             //TODO: нормальные исключения
-            throw new RuntimeException(e);
+            throw new RuntimeException(ex);
         }
-    }
-
-    private static final Random rnd = new Random();
-    private static final String ALL_CHARS = "abcdefghijklmnopqrstuvwxyz";
-    private static String getRandomString(int len) {
-        char[] buffer = new char[len];
-        for (int k = 0; k < buffer.length; k++) {
-            buffer[k] = ALL_CHARS.charAt(rnd.nextInt(ALL_CHARS.length()));
-        }
-        return String.valueOf(buffer);
     }
 }

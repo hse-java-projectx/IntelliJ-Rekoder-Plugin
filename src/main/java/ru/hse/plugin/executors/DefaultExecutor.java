@@ -20,6 +20,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
+import ru.hse.plugin.utils.ThreadUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -104,7 +105,7 @@ public class DefaultExecutor {
         Disposable rootDisposable = Disposer.newDisposable();
         Disposer.register(project, rootDisposable);
 
-        ApplicationManager.getApplication().invokeLater(() -> {
+        ThreadUtils.runInEdt(() -> {
             ProgramRunner<RunnerSettings> runner = ProgramRunner.getRunner(DefaultRunExecutor.EXECUTOR_ID, configuration.getConfiguration());
             ExecutionEnvironment environment;
             try {

@@ -6,7 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Submission {
-    private String name = "";
+    @Key
+    private int id = -1;
     private String author = "";
     @Key
     private String sourceCode = "";
@@ -15,14 +16,17 @@ public class Submission {
     private String verdict = "";
     private String timeConsumed = "";
     private String memoryConsumed = "";
-    private boolean isSent = false;
+    private boolean isSent = true;
+    private String order = "-1";
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public void loadFrom(Submission other) {
+        this.id = other.id;
+        this.author = other.author;
+        this.sourceCode = other.sourceCode;
+        this.compiler = other.compiler;
+        this.verdict = other.verdict;
+        this.timeConsumed = other.timeConsumed;
+        this.memoryConsumed = other.memoryConsumed;
     }
 
     public String getSourceCode() {
@@ -81,8 +85,17 @@ public class Submission {
         isSent = sent;
     }
 
+    public String getId() {
+        return String.valueOf(id);
+    }
+
+
+    public void setOrder(int order) {
+        this.order = String.valueOf(order);
+    }
+
     @Override
     public String toString() {
-        return name;
+        return order;
     }
 }

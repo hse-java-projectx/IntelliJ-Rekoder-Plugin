@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
+import ru.hse.plugin.data.ProblemReference;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.managers.ExplorerManager;
@@ -27,26 +28,13 @@ public class ProblemClickListener implements TreeSelectionListener {
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         Object component = e.getPath().getLastPathComponent();
-        if (!(component instanceof Problem)) {
+        if (!(component instanceof ProblemReference)) {
             return;
         }
-        Problem problem = (Problem) component;
+        ProblemReference problemReference = (ProblemReference) component;
+        Problem problem = problemReference.getProblem();
+        if (problem == null) return;
         ExplorerManager explorerManager = new ExplorerManager(project);
-        if (problem.isLoaded()) {
-            explorerManager.updateProblemPanel(problem);
-            return;
-        }
-        ProgressManager progressManager = new ProgressManagerImpl();
-        progressManager.run(new Task.Backgroundable(project, "Loading problem", true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                try {
-                    problem.loadFrom(new BackendManager(Credentials.getInstance()).loadProblem(problem.getName()));
-                    explorerManager.updateProblemPanel(problem);
-                } catch (UnauthorizedException ex) {
-                    NotificationUtils.showAuthorisationFailedNotification(project);
-                }
-            }
-        });
+        explorerManager.updateProblemPanel(problem);
     }
 }

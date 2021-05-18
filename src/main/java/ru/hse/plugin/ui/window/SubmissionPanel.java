@@ -8,6 +8,10 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.Disposer;
@@ -17,23 +21,29 @@ import com.intellij.ui.jcef.JBCefApp;
 import com.intellij.ui.jcef.JCEFHtmlPanel;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
+import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
+import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.ui.listeners.TestListener;
 import ru.hse.plugin.utils.ComponentUtils;
 import ru.hse.plugin.utils.NotificationUtils;
+import ru.hse.plugin.utils.ThreadUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
 
 public class SubmissionPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
     private final ComboBox<Submission> submissions = new ComboBox<>();
-    private final JCEFHtmlPanel problemStatement = new RekoderHtmlPanel(JBCefApp.getInstance().createClient(), null);
+    private final HtmlPanel problemStatement = new SimpleHtmlPanel();
     private final HtmlPanel author = new SimpleHtmlPanel();
     private final ComboBox<String> languages = new ComboBox<>();
     private final JLabel verdict = new JLabel();
@@ -47,8 +57,8 @@ public class SubmissionPanel extends JPanel {
     private final Project project;
     private final ToolWindow toolWindow;
     private final TestsPanel testsPanel;
-    private Submission submission;
-    private Problem problem;
+    private Submission currentSubmission;
+    private Problem currentProblem;
 
     public SubmissionPanel(Project project, ToolWindow toolWindow, TestsPanel testsPanel) {
         super(new GridBagLayout());
@@ -69,35 +79,42 @@ public class SubmissionPanel extends JPanel {
         setupProblemStatement(c);
     }
 
-    public void setProblem(Problem problem) {
-        this.problem = problem;
+
+    public void setCurrentProblem(Problem currentProblem) {
+        this.currentProblem = currentProblem;
         submissions.setModel(new DefaultComboBoxModel<>());
         Submission newSubmission = new Submission();
-        newSubmission.setName("new");
+        newSubmission.setSent(false);
+        newSubmission.setOrder(currentProblem.getSubmissions().size() + 1);
         newSubmission.setAuthor(Credentials.getInstance().getLogin());
-        if (!problem.getSubmissions().isEmpty()) {
-            Submission lastSubmission = problem.getSubmissions().get(0);
+        if (!currentProblem.getSubmissions().isEmpty()) {
+            Submission lastSubmission = currentProblem.getSubmissions().get(0);
             newSubmission.setSourceCode(lastSubmission.getSourceCode());
             newSubmission.setCompiler(lastSubmission.getCompiler());
         }
-        setSubmission(newSubmission);
+        setCurrentSubmission(newSubmission);
         submissions.addItem(newSubmission);
-        problem.getSubmissions().forEach(submissions::addItem);
-        problemStatement.setHtml(problem.getStatement());
-        problemName.setBody(problem.getName());
-        testsPanel.setTests(problem.getTests());
+        java.util.List<Submission> submissionList = currentProblem.getSubmissions();
+        for (int k = submissionList.size() - 1; k >= 0; k--) {
+            Submission submission = submissionList.get(k);
+            submission.setOrder(k + 1);
+            submissions.addItem(submission);
+        }
+        problemStatement.setBody(currentProblem.getStatement());
+        problemName.setBody(currentProblem.getName());
+        testsPanel.setTests(currentProblem.getTests());
     }
 
-    private void setSubmission(Submission submission) {
-        this.submission = submission;
-        author.setBody(submission.getAuthor());
-        verdict.setText(submission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
-        timeConsumed.setBody(submission.getTimeConsumed());
-        memoryConsumed.setBody(submission.getMemoryConsumed());
-        testAndSubmit.setEnabled(!submission.isSent());
+    private void setCurrentSubmission(Submission currentSubmission) {
+        this.currentSubmission = currentSubmission;
+        author.setBody(currentSubmission.getAuthor());
+        verdict.setText(currentSubmission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
+        timeConsumed.setBody(currentSubmission.getTimeConsumed());
+        memoryConsumed.setBody(currentSubmission.getMemoryConsumed());
+        testAndSubmit.setEnabled(!currentSubmission.isSent());
         test.setEnabled(true);
-        reloadSubmission.setEnabled(submission.isSent());
-        if (submission.getSourceCode().isEmpty()) {
+        reloadSubmission.setEnabled(currentSubmission.isSent());
+        if (currentSubmission.getSourceCode().isEmpty()) {
             return;
         }
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -105,12 +122,12 @@ public class SubmissionPanel extends JPanel {
             WriteAction.run(() -> {
                 CommandProcessor.getInstance().executeCommand(project, () -> {
                     Document document = editor.getDocument();
-                    document.setText(submission.getSourceCode());
+                    document.setText(currentSubmission.getSourceCode());
                 }, "Change File Text", this.getClass());
             });
 
         } else {
-            StringSelection selection = new StringSelection(submission.getSourceCode());
+            StringSelection selection = new StringSelection(currentSubmission.getSourceCode());
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
             NotificationUtils.showToolWindowMessage("Code is in clipboard", NotificationType.INFORMATION, project);
         }
@@ -125,7 +142,6 @@ public class SubmissionPanel extends JPanel {
         ComponentUtils.clearComponent(memoryConsumed);
         ComponentUtils.clearComponent(submissions);
         ComponentUtils.clearComponent(languages);
-//        ComponentUtils.clearComponent(files);
         testAndSubmit.setEnabled(false);
         test.setEnabled(false);
         reloadSubmission.setEnabled(false);
@@ -146,7 +162,7 @@ public class SubmissionPanel extends JPanel {
         submissions.setModel(new DefaultComboBoxModel<>());
         submissions.addItemListener(e -> {
             Submission newSubmission = (Submission) e.getItem();
-            if (!this.submission.isSent()) {
+            if (!this.currentSubmission.isSent()) {
                 ReadAction.run(() -> {
                     Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                     if (editor == null) {
@@ -154,12 +170,12 @@ public class SubmissionPanel extends JPanel {
                     }
                     CommandProcessor.getInstance().executeCommand(project, () -> {
                         Document document = editor.getDocument();
-                        this.submission.setSourceCode(document.getText());
+                        this.currentSubmission.setSourceCode(document.getText());
                     }, "Save File Text", this.getClass());
                 });
             }
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                setSubmission(newSubmission);
+            ThreadUtils.runWriteAction(() -> {
+                setCurrentSubmission(newSubmission);
             });
         });
         c.gridx = 3;
@@ -172,14 +188,14 @@ public class SubmissionPanel extends JPanel {
     }
 
     private void setupProblemStatement(GridBagConstraints c) {
-        Disposer.register(project, problemStatement);
+//        Disposer.register(project, problemStatement);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 1;
         c.weighty = 0.5;
         c.gridwidth = 4;
         c.insets = JBUI.insets(5);
-        add(new JBScrollPane(problemStatement.getComponent()), c);
+        add(new JBScrollPane(problemStatement), c);
     }
 
     private void setupAuthor(GridBagConstraints c) {
@@ -255,18 +271,9 @@ public class SubmissionPanel extends JPanel {
         test.setEnabled(false);
         reloadSubmission.setEnabled(false);
 
+        testAndSubmit.addActionListener(new SubmitListener());
         test.addActionListener(new TestListener(project));
-
-        reloadSubmission.addActionListener(a -> {
-            try {
-                Submission newVersion = new BackendManager(Credentials.getInstance()).loadSubmission(submission.getName());
-                ApplicationManager.getApplication().runWriteAction(() -> {
-                    setSubmission(newVersion);
-                });
-            } catch (UnauthorizedException ex) {
-                NotificationUtils.showAuthorisationFailedNotification(project);
-            }
-        });
+        reloadSubmission.addActionListener(new ReloadSubmissionListener());
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonsPanel.add(testAndSubmit);
@@ -304,5 +311,72 @@ public class SubmissionPanel extends JPanel {
         c.weightx = 0.0;
         c.insets = JBUI.insets(5);
         add(label, c);
+    }
+
+    private class SubmitListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ProgressManager progressManager = new ProgressManagerImpl();
+            progressManager.run(new Task.Backgroundable(project, "Submitting", true) {
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    try {
+                        Problem problem = currentProblem;
+                        Submission submission = currentSubmission;
+                        ThreadUtils.runInEdtAndWait(() -> {
+                            Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+                            if (editor == null) {
+                                NotificationUtils.showToolWindowMessage("Can't get code", NotificationType.ERROR, project);
+                            }
+                            ReadAction.run(() -> {
+                                CommandProcessor.getInstance().executeCommand(project, () -> {
+                                    Document document = editor.getDocument();
+                                    submission.setSourceCode(document.getText());
+                                }, "Get File Text", this.getClass());
+                            });
+                        });
+                        ThreadUtils.runWriteAction(() -> submissions.setEnabled(false));
+                        ProblemManager problemManager = new ProblemManager(project);
+                        if (!problemManager.runTests()) {
+                            NotificationUtils.showToolWindowMessage("Tests failed", NotificationType.ERROR, project);
+                            return;
+                        }
+                        BackendManager backendManager = new BackendManager(Credentials.getInstance());
+                        try {
+                            backendManager.sendSubmission(problem, submission);
+                        } catch (UnauthorizedException unauthorizedException) {
+                            NotificationUtils.showAuthorisationFailedNotification(project);
+                        }
+                    } finally {
+                        ThreadUtils.runWriteAction(() -> submissions.setEnabled(true));
+                    }
+                }
+            });
+        }
+    }
+
+    private class ReloadSubmissionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                ThreadUtils.runWriteAction(() -> submissions.setEnabled(false));
+                ProgressManager progressManager = new ProgressManagerImpl();
+                progressManager.run(new Task.Backgroundable(project, "Load submission", true) {
+                    @Override
+                    public void run(@NotNull ProgressIndicator indicator) {
+                        try {
+                            Submission newVersion = new BackendManager(Credentials.getInstance()).loadSubmission(currentSubmission.getId());
+                            currentSubmission.loadFrom(newVersion);
+                            ThreadUtils.runWriteAction(() -> setCurrentSubmission(currentSubmission));
+                        } catch (UnauthorizedException ex) {
+                                NotificationUtils.showAuthorisationFailedNotification(project);
+                            }
+                        }
+                });
+            } finally {
+                ThreadUtils.runWriteAction(() -> submissions.setEnabled(true));
+            }
+        }
     }
 }

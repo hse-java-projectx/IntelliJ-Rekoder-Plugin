@@ -60,7 +60,7 @@ public class ExplorerManager {
         });
     }
 
-    public void clearProblemsTree() {
+    private void clearProblemsTree() {
         Tree tree = getProblemsTree();
         ThreadUtils.runWriteAction(() -> {
             DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
@@ -85,10 +85,10 @@ public class ExplorerManager {
             teams.setSelectedIndex(0);
             teams.updateUI();
         });
-        updateProblemsTree(getContentHolderTreeModel(user));
+//        updateProblemsTree(getContentHolderTreeModel(user));
     }
 
-    public void clearTeamsList() {
+    private void clearTeamsList() {
         JBList<ContentHolder> teams = getTeamsList();
         ThreadUtils.runWriteAction(() -> {
             CollectionListModel<ContentHolder> model = (CollectionListModel<ContentHolder>) teams.getModel();
@@ -108,7 +108,7 @@ public class ExplorerManager {
         });
     }
 
-    public void clearProblemPanel() {
+    private void clearProblemPanel() {
         ProblemPanel problemPanel = getProblemPanel();
         ThreadUtils.runWriteAction(() -> {
             problemPanel.clearProblem();

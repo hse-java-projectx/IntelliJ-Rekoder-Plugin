@@ -24,12 +24,9 @@ public class RefreshAction extends AnAction {
                 ExplorerManager explorerManager = new ExplorerManager(e.getProject());
                 ProblemManager problemManager = new ProblemManager(e.getProject());
                 try {
-                    explorerManager.clearProblemsTree();
-                    explorerManager.clearTeamsList();
+                    explorerManager.clearEverything();
+                    problemManager.clearEverything();
                     explorerManager.updateTeamsList();
-                    explorerManager.clearProblemPanel();
-                    problemManager.clearProblem();
-                    problemManager.clearTests();
                 } catch (UnauthorizedException ex) {
                     explorerManager.clearEverything();
                     problemManager.clearEverything();

@@ -1,26 +1,16 @@
 package ru.hse.plugin.ui.window;
 
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DataProvider;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
-import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.JBTextArea;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.utils.DataKeys;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 
 public class RekoderProblemToolWindow extends SimpleToolWindowPanel implements DataProvider {
 
@@ -53,7 +43,7 @@ public class RekoderProblemToolWindow extends SimpleToolWindowPanel implements D
     }
 
     public void setProblem(Problem problem) {
-        submissionPanel.setProblem(problem);
+        submissionPanel.setCurrentProblem(problem);
     }
 
     private SubmissionPanel setupProblemInfoPart(Project project, ToolWindow toolWindow, TestsPanel testsPanel) {

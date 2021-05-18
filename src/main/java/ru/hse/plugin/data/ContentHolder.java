@@ -3,7 +3,7 @@ package ru.hse.plugin.data;
 import javax.swing.tree.TreeModel;
 
 public class ContentHolder {
-    TreeModel problemsModel;
+    private TreeModel problemsModel;
 
     public TreeModel getProblemsModel() {
         return problemsModel;

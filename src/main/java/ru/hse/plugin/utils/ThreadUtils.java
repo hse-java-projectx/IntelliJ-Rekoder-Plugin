@@ -25,4 +25,19 @@ public class ThreadUtils {
             app.invokeLater(runnable);
         }
     }
+
+    public static void runInEdtAndWait(Runnable runnable) {
+        Application app = ApplicationManager.getApplication();
+        if (app.isDispatchThread()) {
+            runnable.run();
+        }
+        else {
+            app.invokeAndWait(runnable);
+        }
+    }
+
+    public static void runInBackground(Runnable runnable) {
+        Thread thread = new Thread(runnable);
+        thread.start();
+    }
 }

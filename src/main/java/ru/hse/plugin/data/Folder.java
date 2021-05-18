@@ -1,14 +1,15 @@
 package ru.hse.plugin.data;
 
 import com.google.api.client.util.Key;
+import icons.RekoderIcons;
+
+import javax.swing.*;
 
 public class Folder extends TreeFile {
     @Key
     private String name;
     @Key
     private int id;
-
-
     private boolean loaded = false;
 
     public Folder() {
@@ -44,5 +45,10 @@ public class Folder extends TreeFile {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return RekoderIcons.FOLDER;
     }
 }

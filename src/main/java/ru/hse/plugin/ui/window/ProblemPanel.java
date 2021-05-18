@@ -23,6 +23,7 @@ import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.utils.ComponentUtils;
+import ru.hse.plugin.utils.ThreadUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +32,7 @@ public class ProblemPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
     private final JLabel problemState = new JLabel();
     private final JLabel numberOfAttempts = new JLabel();
-    private final JCEFHtmlPanel problemStatement = new RekoderHtmlPanel(JBCefApp.getInstance().createClient(), null);
+    private final HtmlPanel problemStatement = new SimpleHtmlPanel();
     private final HtmlPanel problemSource = new SimpleHtmlPanel();
     private final JPanel tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     private Problem problem;
@@ -47,7 +48,7 @@ public class ProblemPanel extends JPanel {
         problemState.setText(problem.getState().toString());
         problemState.setForeground(problem.getState().getColor());
         numberOfAttempts.setText(String.valueOf(problem.getNumberOfAttempts()));
-        problemStatement.setHtml(problem.getStatement());
+        problemStatement.setBody(problem.getStatement());
         problemSource.setBody(problem.getSource());
         tagsPanel.removeAll();
         problem.getTags().forEach(t -> tagsPanel.add(new JLabel(t)));
@@ -118,14 +119,14 @@ public class ProblemPanel extends JPanel {
 
     private void setupProblemStatement(GridBagConstraints c) {
         setupLabel(0, 1, "Statement:", c);
-        Disposer.register(project, problemStatement);
+//        Disposer.register(project, problemStatement);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 2;
         c.weighty = 0.5;
         c.gridwidth = 4;
         c.insets = JBUI.insets(0, 5, 5, 5);
-        add(new JBScrollPane(problemStatement.getComponent()), c);
+        add(new JBScrollPane(problemStatement), c);
     }
 
     private void setupProblemSource(GridBagConstraints c) {
@@ -160,8 +161,7 @@ public class ProblemPanel extends JPanel {
     private JPanel setupButtonsPanel(Project project, ToolWindow toolWindow) {
         // Buttons
         startSolving.addActionListener(a -> {
-            Application application = ApplicationManager.getApplication();
-            application.runWriteAction(() -> {
+            ThreadUtils.runWriteAction(() -> {
                 ProblemManager problemManager = new ProblemManager(project);
                 problemManager.setProblem(getProblem());
                 ContentManager contentManager = toolWindow.getContentManager();
