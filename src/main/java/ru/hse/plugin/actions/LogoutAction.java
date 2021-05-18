@@ -7,6 +7,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.managers.ExplorerManager;
@@ -17,21 +18,27 @@ public class LogoutAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        Project project = e.getProject();
+        if (project == null) {
+            return;
+        }
+
+        Credentials credentials = Credentials.getInstance();
+        if (isNotLoggedIn(credentials)) {
+            NotificationUtils.showToolWindowMessage("You are not logged in", NotificationType.WARNING, project);
+            return;
+        }
+
         ProgressManager progressManager = new ProgressManagerImpl();
-        progressManager.run(new Task.Backgroundable(e.getProject(), "Logout", true) {
+        progressManager.run(new Task.Backgroundable(project, "Logout", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                Credentials credentials = Credentials.getInstance();
-                if (isNotLoggedIn(credentials)) {
-                    NotificationUtils.showToolWindowMessage("You are not logged in", NotificationType.WARNING, e.getProject());
-                    return;
-                }
-                ExplorerManager explorerManager = new ExplorerManager(e.getProject());
-                ProblemManager problemManager = new ProblemManager(e.getProject());
+                ExplorerManager explorerManager = new ExplorerManager(project);
+                ProblemManager problemManager = new ProblemManager(project);
                 explorerManager.clearEverything();
                 problemManager.clearEverything();
                 credentials.setToken(null);
-                NotificationUtils.showToolWindowMessage("Logged out successfully", NotificationType.INFORMATION, e.getProject());
+                NotificationUtils.showToolWindowMessage("Logged out successfully", NotificationType.INFORMATION, project);
             }
         });
     }

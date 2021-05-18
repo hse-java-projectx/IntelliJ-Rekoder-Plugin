@@ -88,7 +88,7 @@ public class SubmissionPanel extends JPanel {
         newSubmission.setOrder(currentProblem.getSubmissions().size() + 1);
         newSubmission.setAuthor(Credentials.getInstance().getLogin());
         if (!currentProblem.getSubmissions().isEmpty()) {
-            Submission lastSubmission = currentProblem.getSubmissions().get(0);
+            Submission lastSubmission = currentProblem.getSubmissions().get(currentProblem.getSubmissions().size() - 1);
             newSubmission.setSourceCode(lastSubmission.getSourceCode());
             newSubmission.setCompiler(lastSubmission.getCompiler());
         }

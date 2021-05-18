@@ -1,12 +1,12 @@
 package ru.hse.plugin.actions;
 
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.ExplorerManager;
@@ -17,12 +17,17 @@ public class RefreshAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        Project project = e.getProject();
+        if (project == null) {
+            return;
+        }
+
         ProgressManager progressManager = new ProgressManagerImpl();
-        progressManager.run(new Task.Backgroundable(e.getProject(), "Refresh", true) {
+        progressManager.run(new Task.Backgroundable(project, "Refreshing", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                ExplorerManager explorerManager = new ExplorerManager(e.getProject());
-                ProblemManager problemManager = new ProblemManager(e.getProject());
+                ExplorerManager explorerManager = new ExplorerManager(project);
+                ProblemManager problemManager = new ProblemManager(project);
                 try {
                     explorerManager.clearEverything();
                     problemManager.clearEverything();
@@ -30,7 +35,7 @@ public class RefreshAction extends AnAction {
                 } catch (UnauthorizedException ex) {
                     explorerManager.clearEverything();
                     problemManager.clearEverything();
-                    NotificationUtils.showAuthorisationFailedNotification(e.getProject());
+                    NotificationUtils.showAuthorisationFailedNotification(project);
                 }
             }
         });
