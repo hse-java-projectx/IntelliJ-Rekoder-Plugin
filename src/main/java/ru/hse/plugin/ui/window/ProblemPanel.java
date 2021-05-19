@@ -6,11 +6,14 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
@@ -29,6 +32,7 @@ import ru.hse.plugin.utils.ThreadUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class ProblemPanel extends JPanel {
@@ -182,8 +186,14 @@ public class ProblemPanel extends JPanel {
             ContentManager contentManager = toolWindow.getContentManager();
             ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             Document document = EditorFactory.getInstance().createDocument(lastSubmission.getSourceCode());
+
+            String filename = "main." + CompilerUtils.getFileExtension(lastSubmission.getCompiler());
+            System.out.println(filename);
+            LightVirtualFile lightVirtualFile = new LightVirtualFile(filename, lastSubmission.getSourceCode());
+
 //            Editor editor = EditorFactory.getInstance().createEditor(document, project, JavaFileType.INSTANCE, true);
-            Editor editor = EditorFactory.getInstance().createEditor(document, project, CompilerUtils.getFileType(lastSubmission.getCompiler()), true);
+//            Editor editor = EditorFactory.getInstance().createEditor(document, project, CompilerUtils.getFileType(lastSubmission.getCompiler()), true);
+            Editor editor = EditorFactory.getInstance().createEditor(document, project, lightVirtualFile, true);
             Content codeContent = contentFactory.createContent(new JBScrollPane(editor.getComponent()), "Code", false);
             Disposer.register(codeContent, () -> {
                 EditorFactory.getInstance().releaseEditor(editor);

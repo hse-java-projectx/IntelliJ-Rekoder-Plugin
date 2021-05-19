@@ -159,7 +159,7 @@ public class TestsPanel extends JPanel {
                     parent.remove(this);
                     parent.updateUI();
                 } else {
-                    JBPopupFactory.getInstance().createConfirmation("Sure?", "Yes", "No", () -> {parent.remove(this); parent.updateUI();}, 0).showInCenterOf(s3);
+                    JBPopupFactory.getInstance().createConfirmation("Sure?", "Yes", "No", () -> {parent.remove(this); parent.updateUI();}, 0).showInCenterOf(button);
                 }
             }); // TODO: вынести в отдельный файл
 

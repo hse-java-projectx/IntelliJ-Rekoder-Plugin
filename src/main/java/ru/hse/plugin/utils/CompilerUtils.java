@@ -10,24 +10,17 @@ import java.io.InputStream;
 import java.util.*;
 
 public class CompilerUtils {
-    private static final Map<String, String> fileTypes = init();
+    private static final Map<String, String> filesExtentions = init();
     private static final String LANGUAGES_FILE = "/constants/languages.properties";
     private static final FileType DEFAULT_TYPE = FileTypes.PLAIN_TEXT;
 
     @NotNull
-    public static FileType getFileType(String language) {
-        if (!fileTypes.containsKey(language)) {
-            return DEFAULT_TYPE;
-        }
-        FileType fileType = FileTypeRegistry.getInstance().findFileTypeByName(fileTypes.get(language));
-        if (fileType == null) {
-            return DEFAULT_TYPE;
-        }
-        return fileType;
+    public static String getFileExtension(String language) {
+        return filesExtentions.getOrDefault(language, "txt");
     }
 
     public static Set<String> getAllLanguages() {
-        return Collections.unmodifiableSet(fileTypes.keySet());
+        return Collections.unmodifiableSet(filesExtentions.keySet());
     }
 
     @NotNull
