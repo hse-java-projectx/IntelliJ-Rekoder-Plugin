@@ -5,6 +5,18 @@ public class Command {
     private String commandText;
     private boolean isEnabled;
 
+    public Command() {
+        problemOwner = "";
+        commandText = "";
+        isEnabled = false;
+    }
+
+    public Command(String problemOwner, String commandText, boolean isEnabled) {
+        this.problemOwner = problemOwner;
+        this.commandText = commandText;
+        this.isEnabled = isEnabled;
+    }
+
     public String getProblemOwner() {
         return problemOwner;
     }

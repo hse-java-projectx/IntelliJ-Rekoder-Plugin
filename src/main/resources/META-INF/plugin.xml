@@ -11,6 +11,8 @@
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable groupId="tools" displayName="Rekoder" id="rekoder"
+                                 instance="ru.hse.plugin.ui.settings.SettingsConfigurable"/>
         <toolWindow id="rekoder" secondary="true" anchor="right"
         factoryClass="ru.hse.plugin.ui.window.RekoderToolWindowFactory"
         canCloseContents="true"/>
