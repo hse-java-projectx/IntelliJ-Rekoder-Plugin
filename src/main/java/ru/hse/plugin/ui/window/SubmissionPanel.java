@@ -7,6 +7,7 @@ import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -29,6 +30,7 @@ import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.ui.listeners.TestListener;
+import ru.hse.plugin.utils.CompilerUtils;
 import ru.hse.plugin.utils.ComponentUtils;
 import ru.hse.plugin.utils.NotificationUtils;
 import ru.hse.plugin.utils.ThreadUtils;
@@ -38,6 +40,7 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.util.Collections;
 
 public class SubmissionPanel extends JPanel {
@@ -80,41 +83,58 @@ public class SubmissionPanel extends JPanel {
     }
 
 
-    public void setCurrentProblem(Problem currentProblem) {
-        this.currentProblem = currentProblem;
+    public void setCurrentProblem(Problem newProblem) {
+        this.currentProblem = newProblem;
         submissions.setModel(new DefaultComboBoxModel<>());
         Submission newSubmission = new Submission();
         newSubmission.setSent(false);
         newSubmission.setOrder("new");
         newSubmission.setAuthor(Credentials.getInstance().getLogin());
-        if (!currentProblem.getSubmissions().isEmpty()) {
-            Submission lastSubmission = currentProblem.getSubmissions().get(currentProblem.getSubmissions().size() - 1);
+        if (!newProblem.getSubmissions().isEmpty()) {
+            Submission lastSubmission = newProblem.getSubmissions().get(newProblem.getSubmissions().size() - 1);
             newSubmission.setSourceCode(lastSubmission.getSourceCode());
             newSubmission.setCompiler(lastSubmission.getCompiler());
         }
         setCurrentSubmission(newSubmission);
         submissions.addItem(newSubmission);
-        java.util.List<Submission> submissionList = currentProblem.getSubmissions();
+        java.util.List<Submission> submissionList = newProblem.getSubmissions();
         for (int k = submissionList.size() - 1; k >= 0; k--) {
             Submission submission = submissionList.get(k);
             submission.setOrder(k + 1);
             submissions.addItem(submission);
         }
-        problemStatement.setBody(currentProblem.getStatement());
-        problemName.setBody(currentProblem.getName());
-        testsPanel.setTests(currentProblem.getTests());
+        problemStatement.setBody(newProblem.getStatement());
+        problemName.setBody(newProblem.getName());
+        testsPanel.setTests(newProblem.getTests());
     }
 
-    private void setCurrentSubmission(Submission currentSubmission) {
-        this.currentSubmission = currentSubmission;
-        author.setBody(currentSubmission.getAuthor());
-        verdict.setText(currentSubmission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
-        timeConsumed.setBody(currentSubmission.getTimeConsumed());
-        memoryConsumed.setBody(currentSubmission.getMemoryConsumed());
-        testAndSubmit.setEnabled(!currentSubmission.isSent());
+    private void setCurrentSubmission(Submission newSubmission) {
+        System.out.println(newSubmission);
+        currentSubmission = newSubmission;
+        author.setBody(newSubmission.getAuthor());
+        verdict.setText(newSubmission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
+        timeConsumed.setBody(newSubmission.getTimeConsumed());
+        memoryConsumed.setBody(newSubmission.getMemoryConsumed());
+        testAndSubmit.setEnabled(!newSubmission.isSent());
         test.setEnabled(true);
-        reloadSubmission.setEnabled(currentSubmission.isSent());
-        if (currentSubmission.getSourceCode().isEmpty()) {
+        reloadSubmission.setEnabled(newSubmission.isSent());
+
+        languages.removeAllItems();
+        if (newSubmission.isSent()) {
+            languages.addItem(newSubmission.getCompiler());
+            languages.setEnabled(false);
+        } else {
+            for (String language : CompilerUtils.getAllLanguages()) {
+                languages.addItem(language);
+            }
+            languages.setEnabled(true);
+            System.out.println("Get compiler " + newSubmission.getCompiler());
+            if (newSubmission.getCompiler() != null && !newSubmission.getCompiler().isEmpty()) {
+                languages.setItem(newSubmission.getCompiler());
+//                languages.setSelectedItem(newSubmission.getCompiler());
+            }
+        }
+        if (newSubmission.getSourceCode().isEmpty()) {
             return;
         }
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -122,12 +142,12 @@ public class SubmissionPanel extends JPanel {
             WriteAction.run(() -> {
                 CommandProcessor.getInstance().executeCommand(project, () -> {
                     Document document = editor.getDocument();
-                    document.setText(currentSubmission.getSourceCode());
+                    document.setText(newSubmission.getSourceCode());
                 }, "Change File Text", this.getClass());
             });
 
         } else {
-            StringSelection selection = new StringSelection(currentSubmission.getSourceCode());
+            StringSelection selection = new StringSelection(newSubmission.getSourceCode());
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
             NotificationUtils.showToolWindowMessage("Code is in clipboard", NotificationType.INFORMATION, project);
         }
@@ -161,15 +181,20 @@ public class SubmissionPanel extends JPanel {
         setupLabel(2, 0, "Submissions:", c);
         submissions.setModel(new DefaultComboBoxModel<>());
         submissions.addItemListener(e -> {
+            if (e.getStateChange() != ItemEvent.SELECTED) {
+                return;
+            }
             Submission newSubmission = (Submission) e.getItem();
             if (!this.currentSubmission.isSent()) {
                 ReadAction.run(() -> {
+                    currentSubmission.setCompiler(languages.getItem());
                     Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
                     if (editor == null) {
                         return;
                     }
                     CommandProcessor.getInstance().executeCommand(project, () -> {
                         Document document = editor.getDocument();
+                        System.out.println(FileDocumentManager.getInstance().getFile(document).getFileType());
                         this.currentSubmission.setSourceCode(document.getText());
                     }, "Save File Text", this.getClass());
                 });
@@ -212,9 +237,7 @@ public class SubmissionPanel extends JPanel {
         setupLabel(2, 2, "Language:", c);
         MutableComboBoxModel<String> model = new DefaultComboBoxModel<>();
         languages.setModel(model);
-//        for (int k = 0; k < 100; k++) {
-//            languages.addItem("Language " + k);
-//        }
+        languages.setEnabled(false);
         c.gridx = 3;
         c.weightx = 0.0;
         c.gridy = 2;
@@ -330,13 +353,17 @@ public class SubmissionPanel extends JPanel {
                                 NotificationUtils.showToolWindowMessage("Can't get code", NotificationType.ERROR, project);
                             }
                             ReadAction.run(() -> {
+                                submission.setCompiler(languages.getItem());
                                 CommandProcessor.getInstance().executeCommand(project, () -> {
                                     Document document = editor.getDocument();
                                     submission.setSourceCode(document.getText());
                                 }, "Get File Text", this.getClass());
                             });
                         });
-                        ThreadUtils.runWriteAction(() -> submissions.setEnabled(false));
+                        ThreadUtils.runWriteAction(() -> {
+                            submissions.setEnabled(false);
+                            languages.setEnabled(false);
+                        });
                         ProblemManager problemManager = new ProblemManager(project);
                         if (!problemManager.runTests()) {
                             NotificationUtils.showToolWindowMessage("Tests failed", NotificationType.ERROR, project);
@@ -354,7 +381,10 @@ public class SubmissionPanel extends JPanel {
                             NotificationUtils.showAuthorisationFailedNotification(project);
                         }
                     } finally {
-                        ThreadUtils.runWriteAction(() -> submissions.setEnabled(true));
+                        ThreadUtils.runWriteAction(() -> {
+                            submissions.setEnabled(true);
+                            languages.setEnabled(true);
+                        });
                     }
                 }
             });

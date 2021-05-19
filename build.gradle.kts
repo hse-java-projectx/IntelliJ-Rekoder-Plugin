@@ -33,7 +33,7 @@ intellij {
     updateSinceUntilBuild = true
 
     // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
-    setPlugins(*properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty).toTypedArray())
+//    setPlugins(*properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty).toTypedArray())
 }
 
 tasks {

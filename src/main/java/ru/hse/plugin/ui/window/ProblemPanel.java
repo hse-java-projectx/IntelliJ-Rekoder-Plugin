@@ -1,12 +1,13 @@
 package ru.hse.plugin.ui.window;
 
-import com.intellij.ide.highlighter.JavaFileType;
+//import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
@@ -22,11 +23,13 @@ import com.intellij.util.ui.JBUI;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import ru.hse.plugin.managers.ProblemManager;
+import ru.hse.plugin.utils.CompilerUtils;
 import ru.hse.plugin.utils.ComponentUtils;
 import ru.hse.plugin.utils.ThreadUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class ProblemPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
@@ -175,12 +178,12 @@ public class ProblemPanel extends JPanel {
 //        System.out.println(l);
         previewCode.addActionListener(a -> {
             Problem problem = getProblem();
-            Submission lastSubmission = problem.getSubmissions().get(0);
+            Submission lastSubmission = problem.getSubmissions().get(problem.getSubmissions().size() - 1);
             ContentManager contentManager = toolWindow.getContentManager();
             ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             Document document = EditorFactory.getInstance().createDocument(lastSubmission.getSourceCode());
 //            Editor editor = EditorFactory.getInstance().createEditor(document, project, JavaFileType.INSTANCE, true);
-            Editor editor = EditorFactory.getInstance().createEditor(document, project, getFileTypeByCompiler(lastSubmission.getCompiler()), true);
+            Editor editor = EditorFactory.getInstance().createEditor(document, project, CompilerUtils.getFileType(lastSubmission.getCompiler()), true);
             Content codeContent = contentFactory.createContent(new JBScrollPane(editor.getComponent()), "Code", false);
             Disposer.register(codeContent, () -> {
                 EditorFactory.getInstance().releaseEditor(editor);
@@ -197,10 +200,6 @@ public class ProblemPanel extends JPanel {
         buttonsPanel.add(startSolving);
         buttonsPanel.add(previewCode);
         return buttonsPanel;
-    }
-
-    private FileType getFileTypeByCompiler(String compiler) { // TODO: вынести в Utils
-        return JavaFileType.INSTANCE;
     }
 
     private Problem getProblem() {

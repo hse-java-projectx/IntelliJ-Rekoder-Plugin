@@ -38,6 +38,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DefaultExecutor {
     public Optional<String> execute(Project project, ProgressIndicator indicator, String input) {
         RunnerAndConfigurationSettings configurationSettings = RunManager.getInstance(project).getSelectedConfiguration();
+        if (configurationSettings == null) {
+            return Optional.empty();
+        }
         try {
             configurationSettings.checkSettings();
         } catch (RuntimeConfigurationException ex) {

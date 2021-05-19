@@ -8,7 +8,6 @@
 <!--    ]]></description>-->
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable groupId="tools" displayName="Rekoder" id="rekoder"
