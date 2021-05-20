@@ -387,9 +387,14 @@ public class SubmissionPanel extends JPanel {
                                 return;
                             }
                         }
+                        ProblemManager problemManager = new ProblemManager(project);
+                        ReadAction.run(() -> {
+                            problem.setTests(problemManager.getTests());
+                        });
                         BackendManager backendManager = new BackendManager(Credentials.getInstance());
                         try {
                             backendManager.sendSubmission(problem, submission);
+                            backendManager.sendProblemState(problem);
                             ThreadUtils.runWriteAction(() -> {
                                 submission.setSent(true);
                                 problem.getSubmissions().add(submission);

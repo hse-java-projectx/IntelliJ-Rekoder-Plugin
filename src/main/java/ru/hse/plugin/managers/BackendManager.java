@@ -1,6 +1,7 @@
 package ru.hse.plugin.managers;
 
 import com.google.api.client.http.*;
+import com.google.api.client.http.apache.v2.ApacheHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
@@ -12,12 +13,13 @@ import ru.hse.plugin.utils.PropertiesUtils;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class BackendManager {
-    private static final HttpTransport TRANSPORT = new NetHttpTransport();
+    private static final HttpTransport TRANSPORT = new ApacheHttpTransport();
     private static final HttpRequestFactory REQUEST_FACTORY = TRANSPORT.createRequestFactory();
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private static final String REPLACEMENT = "${}";
@@ -165,6 +167,10 @@ public class BackendManager {
         sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission);
     }
 
+    public void sendProblemState(Problem problem) throws UnauthorizedException {
+        updateData(PROBLEMS_URL + problem.getId(), problem);
+    }
+
     private void saveProblemsToPool(Iterable<Problem> iterable) {
         ProblemPool problemPool = ProblemPool.getInstance();
         iterable.forEach(problemPool::addProblem);
@@ -196,9 +202,33 @@ public class BackendManager {
     private void sendData(String URL, Object object) throws UnauthorizedException {
         GenericUrl url = new GenericUrl(URL);
         try {
-            HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, new JsonHttpContent(JSON_FACTORY, object));
+            JsonHttpContent content = new JsonHttpContent(JSON_FACTORY, object);
+            HttpMediaType mediaType = new HttpMediaType("application/json");
+            mediaType.setCharsetParameter(StandardCharsets.UTF_8);
+            content.setMediaType(mediaType);
+            HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, content);
             HttpResponse resp = req.execute();
             //TODO: проверять status code
+        } catch (HttpResponseException ex) {
+            if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
+                throw new UnauthorizedException();
+            }
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            //TODO: нормальные исключения
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void updateData(String URL, Object object) throws UnauthorizedException {
+        GenericUrl url = new GenericUrl(URL);
+        try {
+            JsonHttpContent content = new JsonHttpContent(JSON_FACTORY, object);
+            HttpMediaType mediaType = new HttpMediaType("application/merge-patch+json");
+            mediaType.setCharsetParameter(StandardCharsets.UTF_8);
+            content.setMediaType(mediaType);
+            HttpRequest req = REQUEST_FACTORY.buildPatchRequest(url, content);
+            HttpResponse resp = req.execute();
         } catch (HttpResponseException ex) {
             if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
                 throw new UnauthorizedException();

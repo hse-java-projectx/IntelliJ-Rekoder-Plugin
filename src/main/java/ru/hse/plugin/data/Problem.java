@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Problem {
     @Key
@@ -65,6 +66,10 @@ public class Problem {
 
     public List<TestImpl> getTests() {
         return tests;
+    }
+
+    public void setTests(List<Test> tests) {
+        this.tests = tests.stream().map(t -> new TestImpl(t.getInput(), t.getExpectedOutput())).collect(Collectors.toList());
     }
 
     public void setSubmissions(List<Submission> submissions) {
