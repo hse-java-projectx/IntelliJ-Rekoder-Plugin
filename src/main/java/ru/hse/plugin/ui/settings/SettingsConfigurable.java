@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class SettingsConfigurable implements SearchableConfigurable {
     public static final String DISPLAY_NAME = "Rekoder";
-    private final JPanel mainPanel = new JPanel();
+    private JPanel mainPanel;
     private volatile boolean wasDeleted = false;
     private volatile boolean wasAdded = false;
 
@@ -35,13 +35,10 @@ public class SettingsConfigurable implements SearchableConfigurable {
 
     @Override
     public @Nullable JComponent createComponent() {
+        mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         mainPanel.setBorder(JBUI.Borders.empty());
-
-        Command command = new Command();
-        command.setProblemOwner("codeforces");
-        command.setCommandText("cf-cli submit $code");
 
         reset();
 
@@ -90,6 +87,11 @@ public class SettingsConfigurable implements SearchableConfigurable {
         wasDeleted = false;
         Commands commands = Commands.getInstance();
         commands.getCommands().forEach(this::addCommand);
+    }
+
+    @Override
+    public void disposeUIResources() {
+        mainPanel = null;
     }
 
     private void addCommand(Command command) {

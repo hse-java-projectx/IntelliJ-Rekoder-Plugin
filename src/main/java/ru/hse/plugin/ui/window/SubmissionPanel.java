@@ -1,7 +1,6 @@
 package ru.hse.plugin.ui.window;
 
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.command.CommandProcessor;
@@ -15,18 +14,18 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.jcef.JBCefApp;
-import com.intellij.ui.jcef.JCEFHtmlPanel;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
+import ru.hse.plugin.data.Commands;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import ru.hse.plugin.exceptions.UnauthorizedException;
+import ru.hse.plugin.executors.CommandsExecutor;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.managers.ProblemManager;
 import ru.hse.plugin.ui.listeners.TestListener;
@@ -41,7 +40,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SubmissionPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
@@ -53,9 +52,10 @@ public class SubmissionPanel extends JPanel {
     private final HtmlPanel timeConsumed = new SimpleHtmlPanel();
     private final HtmlPanel memoryConsumed = new SimpleHtmlPanel();
     //    private final ComboBox<String> files = new ComboBox<>();
-    private final JButton testAndSubmit = new JButton("Test and Submit");
+    private final JButton submit = new JButton("Submit");
     private final JButton test = new JButton("Test");
     private final JButton reloadSubmission = new JButton("Reload Submission");
+    private final JCheckBox testBeforeSubmit = new JCheckBox("Test before submit");
 
     private final Project project;
     private final ToolWindow toolWindow;
@@ -109,15 +109,15 @@ public class SubmissionPanel extends JPanel {
     }
 
     private void setCurrentSubmission(Submission newSubmission) {
-        System.out.println(newSubmission);
         currentSubmission = newSubmission;
         author.setBody(newSubmission.getAuthor());
         verdict.setText(newSubmission.getVerdict()); // TODO: должен быть enum и нужно красить в цвет
         timeConsumed.setBody(newSubmission.getTimeConsumed());
         memoryConsumed.setBody(newSubmission.getMemoryConsumed());
-        testAndSubmit.setEnabled(!newSubmission.isSent());
+        submit.setEnabled(!newSubmission.isSent());
         test.setEnabled(true);
         reloadSubmission.setEnabled(newSubmission.isSent());
+        testBeforeSubmit.setEnabled(!newSubmission.isSent());
 
         languages.removeAllItems();
         if (newSubmission.isSent()) {
@@ -128,7 +128,6 @@ public class SubmissionPanel extends JPanel {
                 languages.addItem(language);
             }
             languages.setEnabled(true);
-            System.out.println("Get compiler " + newSubmission.getCompiler());
             if (newSubmission.getCompiler() != null && !newSubmission.getCompiler().isEmpty()) {
                 languages.setItem(newSubmission.getCompiler());
 //                languages.setSelectedItem(newSubmission.getCompiler());
@@ -162,7 +161,7 @@ public class SubmissionPanel extends JPanel {
         ComponentUtils.clearComponent(memoryConsumed);
         ComponentUtils.clearComponent(submissions);
         ComponentUtils.clearComponent(languages);
-        testAndSubmit.setEnabled(false);
+        submit.setEnabled(false);
         test.setEnabled(false);
         reloadSubmission.setEnabled(false);
     }
@@ -194,7 +193,6 @@ public class SubmissionPanel extends JPanel {
                     }
                     CommandProcessor.getInstance().executeCommand(project, () -> {
                         Document document = editor.getDocument();
-                        System.out.println(FileDocumentManager.getInstance().getFile(document).getFileType());
                         this.currentSubmission.setSourceCode(document.getText());
                     }, "Save File Text", this.getClass());
                 });
@@ -287,19 +285,31 @@ public class SubmissionPanel extends JPanel {
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.LAST_LINE_START;
         add(buttonsPanel, c);
+
+        testBeforeSubmit.setEnabled(false);
+        testBeforeSubmit.setSelected(true);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 3;
+        c.gridy = 6;
+        c.weighty = 0.0;
+        c.weightx = 0.0;
+        c.gridwidth = 1;
+        c.insets = JBUI.insets(5);
+        c.anchor = GridBagConstraints.LAST_LINE_END;
+        add(testBeforeSubmit, c);
     }
 
     private JPanel setupButtonsPanel() {
-        testAndSubmit.setEnabled(false);
+        submit.setEnabled(false);
         test.setEnabled(false);
         reloadSubmission.setEnabled(false);
 
-        testAndSubmit.addActionListener(new SubmitListener());
+        submit.addActionListener(new SubmitListener());
         test.addActionListener(new TestListener(project));
         reloadSubmission.addActionListener(new ReloadSubmissionListener());
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonsPanel.add(testAndSubmit);
+        buttonsPanel.add(submit);
         buttonsPanel.add(test);
         buttonsPanel.add(reloadSubmission);
         return buttonsPanel;
@@ -347,27 +357,35 @@ public class SubmissionPanel extends JPanel {
                     try {
                         Problem problem = currentProblem;
                         Submission submission = currentSubmission;
+                        AtomicReference<Editor> editor = new AtomicReference<>();
+
                         ThreadUtils.runInEdtAndWait(() -> {
-                            Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-                            if (editor == null) {
-                                NotificationUtils.showToolWindowMessage("Can't get code", NotificationType.ERROR, project);
+                            editor.set(FileEditorManager.getInstance(project).getSelectedTextEditor());
+                            if (editor.get() == null) {
+                                return;
                             }
                             ReadAction.run(() -> {
                                 submission.setCompiler(languages.getItem());
                                 CommandProcessor.getInstance().executeCommand(project, () -> {
-                                    Document document = editor.getDocument();
+                                    Document document = editor.get().getDocument();
                                     submission.setSourceCode(document.getText());
                                 }, "Get File Text", this.getClass());
                             });
                         });
+                        if (editor.get() == null) {
+                            NotificationUtils.showToolWindowMessage("Can't get code", NotificationType.ERROR, project);
+                            return;
+                        }
                         ThreadUtils.runWriteAction(() -> {
                             submissions.setEnabled(false);
                             languages.setEnabled(false);
                         });
-                        ProblemManager problemManager = new ProblemManager(project);
-                        if (!problemManager.runTests()) {
-                            NotificationUtils.showToolWindowMessage("Tests failed", NotificationType.ERROR, project);
-                            return;
+                        if (testBeforeSubmit.isSelected()) {
+                            ProblemManager problemManager = new ProblemManager(project);
+                            if (!problemManager.runTests()) {
+                                NotificationUtils.showToolWindowMessage("Tests failed", NotificationType.ERROR, project);
+                                return;
+                            }
                         }
                         BackendManager backendManager = new BackendManager(Credentials.getInstance());
                         try {
@@ -376,6 +394,18 @@ public class SubmissionPanel extends JPanel {
                                 submission.setSent(true);
                                 problem.getSubmissions().add(submission);
                                 setCurrentProblem(problem);
+                            });
+                            Document document = editor.get().getDocument();
+                            VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+                            progressManager.run(new Task.Backgroundable(project, "Running commands", true) {
+                                @Override
+                                public void run(@NotNull ProgressIndicator indicator) {
+                                    CommandsExecutor commandsExecutor = new CommandsExecutor(problem, submission, virtualFile, project);
+                                    Commands commands = Commands.getInstance();
+                                    commands.getCommands().stream().
+                                            filter(c -> c.getProblemOwner().isEmpty() || c.getProblemOwner().equals(problem.getSource())).
+                                            forEach(c -> commandsExecutor.execute(c.getCommandText()));
+                                }
                             });
                         } catch (UnauthorizedException unauthorizedException) {
                             NotificationUtils.showAuthorisationFailedNotification(project);

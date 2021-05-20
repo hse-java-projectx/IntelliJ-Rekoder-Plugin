@@ -35,7 +35,6 @@ public class CompilerUtils {
             properties.load(inputStream);
             for (Object language : properties.keySet()) {
                 if (!(language instanceof String)) {
-                    System.out.println("Error");
                     return types;
                 }
                 String type = properties.getProperty((String) language);

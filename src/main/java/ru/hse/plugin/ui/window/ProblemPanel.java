@@ -176,10 +176,6 @@ public class ProblemPanel extends JPanel {
             });
         });
 
-//        Arrays.stream(FileTypeRegistry.getInstance().getRegisteredFileTypes()).forEach(f -> System.out.println(f.getName()));
-//        System.out.println(FileTypeRegistry.getInstance().findFileTypeByName("C++"));
-//        Language l = Language.findLanguageByID("");
-//        System.out.println(l);
         previewCode.addActionListener(a -> {
             Problem problem = getProblem();
             Submission lastSubmission = problem.getSubmissions().get(problem.getSubmissions().size() - 1);
@@ -188,11 +184,8 @@ public class ProblemPanel extends JPanel {
             Document document = EditorFactory.getInstance().createDocument(lastSubmission.getSourceCode());
 
             String filename = "main." + CompilerUtils.getFileExtension(lastSubmission.getCompiler());
-            System.out.println(filename);
             LightVirtualFile lightVirtualFile = new LightVirtualFile(filename, lastSubmission.getSourceCode());
 
-//            Editor editor = EditorFactory.getInstance().createEditor(document, project, JavaFileType.INSTANCE, true);
-//            Editor editor = EditorFactory.getInstance().createEditor(document, project, CompilerUtils.getFileType(lastSubmission.getCompiler()), true);
             Editor editor = EditorFactory.getInstance().createEditor(document, project, lightVirtualFile, true);
             Content codeContent = contentFactory.createContent(new JBScrollPane(editor.getComponent()), "Code", false);
             Disposer.register(codeContent, () -> {

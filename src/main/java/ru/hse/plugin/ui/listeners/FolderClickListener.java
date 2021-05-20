@@ -26,7 +26,7 @@ public class FolderClickListener implements TreeWillExpandListener {
             return;
         }
         try {
-            List<TreeFile> files = new BackendManager(Credentials.getInstance()).loadFolder(folder.getId());
+            List<TreeFile> files = new BackendManager(Credentials.getInstance()).getFolderFiles(folder.getId());
             files.forEach(folder::add);
             folder.setLoaded();
         } catch (UnauthorizedException ex) {

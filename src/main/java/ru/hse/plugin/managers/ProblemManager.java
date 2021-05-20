@@ -61,12 +61,9 @@ public class ProblemManager {
 
                 for (Test test : list) {
                     ThreadUtils.runWriteAction(() -> test.setStatus(Test.Status.TESTING));
-                    System.out.println(test.getInput());
-                    System.out.println(test.getExpectedOutput());
                     Optional<String> result = runExecutor.execute(project, indicator, test.getInput());
                     Test.Status status;
                     if (result.isPresent()) {
-                        System.out.println(result.get());
                         String expected = StringUtils.trimEndLines(test.getExpectedOutput());
                         String actual = StringUtils.trimEndLines(result.get());
                         if (expected.equals(actual)) {
@@ -79,7 +76,6 @@ public class ProblemManager {
                         status = Test.Status.ERROR;
                         allPassed[0] = false;
                     }
-                    System.out.println("Status: " + status);
                     ThreadUtils.runWriteAction(() -> {
                         test.setStatus(status);
                         result.ifPresent(s -> test.setActualOutput(StringUtils.trimEndLines(s)));

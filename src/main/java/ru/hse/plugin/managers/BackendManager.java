@@ -24,14 +24,13 @@ public class BackendManager {
     private static final String API_URL = new PropertiesUtils("/constants/constants.properties").getKey("apiUrl", "");
     private final String USER_URL;
     private static final String TEAMS_URL = API_URL + "teams/";
-    private static final String TEAM_FOLDERS_URL = TEAMS_URL + REPLACEMENT + "/folders/";
     private static final String TEAM_PROBLEMS_URL = TEAMS_URL + REPLACEMENT + "/problems/";
-    private static final String FOLDER_SUB_FOLDERS_URL = API_URL + "folders/" + REPLACEMENT + "/folders/";
-    private static final String FOLDER_PROBLEMS_URL = API_URL + "folders/" + REPLACEMENT + "/problems/";
+    private static final String FOLDERS_URL = API_URL + "folders/";
+    private static final String FOLDER_SUB_FOLDERS_URL = FOLDERS_URL + REPLACEMENT + "/folders/";
+    private static final String FOLDER_PROBLEMS_URL = FOLDERS_URL + REPLACEMENT + "/problems/";
     private static final String PROBLEMS_URL = API_URL + "problems/";
     private static final String SUBMISSIONS_URL = API_URL + "submissions/";
     private static final String PROBLEM_SUBMISSIONS_URL = PROBLEMS_URL + REPLACEMENT + "/submissions/";
-    private final String USER_FOLDERS_URL;
     private final String USER_PROBLEMS_URL;
     private static final int UNAUTHORIZED_CODE = 401;
 
@@ -40,7 +39,6 @@ public class BackendManager {
     public BackendManager(Credentials credentials) {
         this.credentials = credentials;
         USER_URL = API_URL + "users/" + credentials.getLogin() + "/";
-        USER_FOLDERS_URL = USER_URL + "folders/";
         USER_PROBLEMS_URL = USER_URL + "problems/";
     }
 
@@ -72,19 +70,20 @@ public class BackendManager {
         return getData(USER_URL, User.class);
     }
 
-    public List<Folder> getRootFolders(Team team) throws UnauthorizedException {
-        List<Folder> list = new ArrayList<>();
+    public List<TreeFile> getRootFiles(Team team) throws UnauthorizedException {
+        List<TreeFile> list = new ArrayList<>();
         list.add(getFolderWithAllProblems(team));
-        Folder[] folders = getData(TEAM_FOLDERS_URL.replace(REPLACEMENT, team.getName()), Folder[].class);
-        list.addAll(Arrays.asList(folders));
+        Folder rootFolder = getData(FOLDERS_URL + team.getRootFolderId(), Folder.class);
+        list.addAll(getFolderFiles(rootFolder.getId()));
         return list;
     }
 
-    public List<Folder> getPersonalRootFolders() throws UnauthorizedException {
-        List<Folder> list = new ArrayList<>();
+    public List<TreeFile> getPersonalRootFiles() throws UnauthorizedException {
+        List<TreeFile> list = new ArrayList<>();
         list.add(getFolderWithAllProblems());
-        Folder[] folders = getData(USER_FOLDERS_URL, Folder[].class);
-        list.addAll(Arrays.asList(folders));
+        User user = getUser();
+        Folder rootFolder = getData(FOLDERS_URL + user.getRootFolderId(), Folder.class);
+        list.addAll(getFolderFiles(rootFolder.getId()));
         return list;
     }
 
@@ -122,13 +121,17 @@ public class BackendManager {
         return Arrays.asList(problems);
     }
 
-    public List<TreeFile> loadFolder(String folderId) throws UnauthorizedException {
+    public List<TreeFile> getFolderFiles(String folderId) throws UnauthorizedException {
         List<TreeFile> files = new ArrayList<>();
         files.addAll(getFolderSubFolders(folderId));
         List<Problem> problems = getFolderProblems(folderId);
         saveProblemsToPool(problems);
         files.addAll(getProblemsReferences(problems));
         return files;
+    }
+
+    private Folder getFolder(String foldersId) throws UnauthorizedException {
+        return getData(FOLDERS_URL + foldersId, Folder.class);
     }
 
     private List<Folder> getFolderSubFolders(String folderId) throws UnauthorizedException {
@@ -159,7 +162,6 @@ public class BackendManager {
     }
 
     public void sendSubmission(Problem problem, Submission submission) throws UnauthorizedException {
-        System.out.println("Sending");
         sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission);
     }
 

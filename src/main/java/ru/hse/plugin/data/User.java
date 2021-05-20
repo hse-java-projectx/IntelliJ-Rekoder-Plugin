@@ -6,9 +6,11 @@ import java.util.List;
 
 public class User extends ContentHolder {
     @Key
-    private String name;
+    private String name = "";
     @Key("teamIds")
     private List<String> teams;
+    @Key
+    private int rootFolderId = -1;
 
     public User() {
 
@@ -25,6 +27,10 @@ public class User extends ContentHolder {
 
     public List<String> getTeams() {
         return teams;
+    }
+
+    public int getRootFolderId() {
+        return rootFolderId;
     }
 
     @Override

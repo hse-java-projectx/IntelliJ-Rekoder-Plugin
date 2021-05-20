@@ -4,18 +4,20 @@ import com.google.api.client.util.Key;
 
 public class Team extends ContentHolder {
     @Key
-    private String name;
+    private String name = "";
+    @Key
+    private int rootFolderId = -1;
 
     public Team() {
 
     }
 
-    public Team(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
+    }
+
+    public int getRootFolderId() {
+        return rootFolderId;
     }
 
     @Override

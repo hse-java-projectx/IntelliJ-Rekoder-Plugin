@@ -35,16 +35,16 @@ public class ExplorerManager {
         if (contentHolder.getProblemsModel() != null) {
             return contentHolder.getProblemsModel();
         }
-        List<Folder> rootFolders;
+        List<TreeFile> rootFiles;
         BackendManager backendManager = new BackendManager(Credentials.getInstance());
         if (contentHolder instanceof User) {
-            rootFolders = backendManager.getPersonalRootFolders();
+            rootFiles = backendManager.getPersonalRootFiles();
         } else {
-            rootFolders = backendManager.getRootFolders((Team) contentHolder);
+            rootFiles = backendManager.getRootFiles((Team) contentHolder);
         }
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
-        for (Folder folder : rootFolders) {
-            root.add(folder);
+        for (TreeFile file : rootFiles) {
+            root.add(file);
         }
         DefaultTreeModel problemsModel = new DefaultTreeModel(root);
         contentHolder.setProblemsModel(problemsModel);
