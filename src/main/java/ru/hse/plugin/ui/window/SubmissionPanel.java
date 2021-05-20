@@ -20,10 +20,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
-import ru.hse.plugin.data.Commands;
-import ru.hse.plugin.data.Credentials;
-import ru.hse.plugin.data.Problem;
-import ru.hse.plugin.data.Submission;
+import ru.hse.plugin.data.*;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.executors.CommandsExecutor;
 import ru.hse.plugin.managers.BackendManager;
@@ -409,6 +406,7 @@ public class SubmissionPanel extends JPanel {
                                     Commands commands = Commands.getInstance();
                                     commands.getCommands().stream().
                                             filter(c -> c.getProblemOwner().isEmpty() || c.getProblemOwner().equals(problem.getSource())).
+                                            filter(Command::isEnabled).
                                             forEach(c -> commandsExecutor.execute(c.getCommandText()));
                                 }
                             });
