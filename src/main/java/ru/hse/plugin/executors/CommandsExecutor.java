@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
+import ru.hse.plugin.utils.NotificationUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +27,7 @@ public class CommandsExecutor {
     private static final String FILENAME = "\\$FILENAME";
     private static final String FILEPATH = "\\$FILEPATH";
     private static final Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
-    private static final NotificationGroup NOTIFICATION_GROUP =
-            new NotificationGroup("Rekoder event log", NotificationDisplayType.NONE, true);
+
 
     private final Problem problem;
     private final Submission submission;
@@ -56,7 +56,7 @@ public class CommandsExecutor {
             processHandler.startNotify();
             processHandler.waitFor();
             String message = String.join("", output);
-            NOTIFICATION_GROUP.createNotification(message, NotificationType.INFORMATION).notify(project);
+            NotificationUtils.log(project, message, NotificationType.INFORMATION);
         } catch (ExecutionException e) {
             e.printStackTrace();
         }

@@ -10,6 +10,8 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Rekoder log" displayType="NONE"/>
+        <notificationGroup id="Rekoder tool window" displayType="TOOL_WINDOW" toolWindowId="rekoder"/>
         <jcef.appRequiredArgumentsProvider implementation="ru.hse.plugin.settings.GpuDisabler"/>
         <applicationConfigurable groupId="tools" displayName="Rekoder" id="rekoder"
                                  instance="ru.hse.plugin.ui.settings.SettingsConfigurable"/>

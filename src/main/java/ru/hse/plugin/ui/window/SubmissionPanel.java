@@ -24,6 +24,7 @@ import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.*;
+import ru.hse.plugin.exceptions.HttpException;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.executors.CommandsExecutor;
 import ru.hse.plugin.managers.BackendManager;
@@ -392,9 +393,8 @@ public class SubmissionPanel extends JPanel {
                             }
                         }
                         ProblemManager problemManager = new ProblemManager(project);
-                        ReadAction.run(() -> {
-                            problem.setTests(problemManager.getTests());
-                        });
+
+                        problem.setTests(problemManager.getTests());
                         BackendManager backendManager = new BackendManager(Credentials.getInstance());
                         try {
                             backendManager.sendSubmission(problem, submission);
@@ -419,6 +419,9 @@ public class SubmissionPanel extends JPanel {
                             });
                         } catch (UnauthorizedException unauthorizedException) {
                             NotificationUtils.showAuthorisationFailedNotification(project);
+                        } catch (HttpException ex) {
+                            NotificationUtils.showNetworkProblemNotification(project);
+                            NotificationUtils.log(project, ex.getMessage(), NotificationType.ERROR);
                         }
                     } finally {
                         ThreadUtils.runWriteAction(() -> {
@@ -445,9 +448,12 @@ public class SubmissionPanel extends JPanel {
                             currentSubmission.loadFrom(newVersion);
                             ThreadUtils.runWriteAction(() -> setCurrentSubmission(currentSubmission));
                         } catch (UnauthorizedException ex) {
-                                NotificationUtils.showAuthorisationFailedNotification(project);
-                            }
+                            NotificationUtils.showAuthorisationFailedNotification(project);
+                        } catch (HttpException ex) {
+                            NotificationUtils.showNetworkProblemNotification(project);
+                            NotificationUtils.log(project, ex.getMessage(), NotificationType.ERROR);
                         }
+                    }
                 });
             } finally {
                 ThreadUtils.runWriteAction(() -> submissions.setEnabled(true));

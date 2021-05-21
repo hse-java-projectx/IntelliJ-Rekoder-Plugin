@@ -1,5 +1,6 @@
 package ru.hse.plugin.actions;
 
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -8,6 +9,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import ru.hse.plugin.exceptions.HttpException;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.ExplorerManager;
 import ru.hse.plugin.managers.ProblemManager;
@@ -36,6 +38,11 @@ public class RefreshAction extends AnAction {
                     explorerManager.clearEverything();
                     problemManager.clearEverything();
                     NotificationUtils.showAuthorisationFailedNotification(project);
+                } catch (HttpException ex) {
+                    explorerManager.clearEverything();
+                    problemManager.clearEverything();
+                    NotificationUtils.showNetworkProblemNotification(project);
+                    NotificationUtils.log(project, ex.getMessage(), NotificationType.ERROR);
                 }
             }
         });

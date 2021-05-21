@@ -6,6 +6,7 @@ import com.intellij.ui.CollectionListModel;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.treeStructure.Tree;
 import ru.hse.plugin.data.*;
+import ru.hse.plugin.exceptions.HttpException;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.ui.window.ProblemPanel;
 import ru.hse.plugin.ui.window.RekoderToolWindowFactory;
@@ -32,7 +33,7 @@ public class ExplorerManager {
         ProblemPool.getInstance().clear();
     }
 
-    public TreeModel getContentHolderTreeModel(ContentHolder contentHolder) throws UnauthorizedException {
+    public TreeModel getContentHolderTreeModel(ContentHolder contentHolder) throws UnauthorizedException, HttpException {
         if (contentHolder.getProblemsModel() != null) {
             return contentHolder.getProblemsModel();
         }
@@ -73,7 +74,7 @@ public class ExplorerManager {
 
 
 
-    public void updateTeamsList() throws UnauthorizedException {
+    public void updateTeamsList() throws UnauthorizedException, HttpException {
         BackendManager backendManager = new BackendManager(Credentials.getInstance());
         JBList<ContentHolder> teams = getTeamsList();
         List<Team> teamsList = backendManager.getTeams();

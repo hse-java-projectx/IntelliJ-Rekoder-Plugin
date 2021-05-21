@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.ProblemReference;
+import ru.hse.plugin.exceptions.HttpException;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.managers.ExplorerManager;
@@ -49,6 +50,9 @@ public class ProblemClickListener implements TreeSelectionListener {
                 } catch (UnauthorizedException ex) {
                     NotificationUtils.showAuthorisationFailedNotification(project);
                     return;
+                } catch (HttpException ex) {
+                    NotificationUtils.showNetworkProblemNotification(project);
+                    NotificationUtils.log(project, ex.getMessage(), NotificationType.ERROR);
                 }
                 ExplorerManager explorerManager = new ExplorerManager(project);
                 explorerManager.updateProblemPanel(problem);
