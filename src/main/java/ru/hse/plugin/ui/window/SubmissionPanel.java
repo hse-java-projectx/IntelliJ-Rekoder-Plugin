@@ -397,7 +397,8 @@ public class SubmissionPanel extends JPanel {
                         problem.setTests(problemManager.getTests());
                         BackendManager backendManager = new BackendManager(Credentials.getInstance());
                         try {
-                            backendManager.sendSubmission(problem, submission);
+                            Submission backendSubmission = backendManager.sendSubmission(problem, submission);
+                            submission.setId(backendSubmission.getId());
                             backendManager.sendProblemState(problem);
                             ThreadUtils.runWriteAction(() -> {
                                 submission.setSent(true);
@@ -444,7 +445,7 @@ public class SubmissionPanel extends JPanel {
                     @Override
                     public void run(@NotNull ProgressIndicator indicator) {
                         try {
-                            Submission newVersion = new BackendManager(Credentials.getInstance()).loadSubmission(currentSubmission.getId());
+                            Submission newVersion = new BackendManager(Credentials.getInstance()).loadSubmission(String.valueOf(currentSubmission.getId()));
                             currentSubmission.loadFrom(newVersion);
                             ThreadUtils.runWriteAction(() -> setCurrentSubmission(currentSubmission));
                         } catch (UnauthorizedException ex) {

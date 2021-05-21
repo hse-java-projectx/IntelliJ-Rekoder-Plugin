@@ -85,8 +85,12 @@ public class Submission {
         isSent = sent;
     }
 
-    public String getId() {
-        return String.valueOf(id);
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public void setOrder(String order) {

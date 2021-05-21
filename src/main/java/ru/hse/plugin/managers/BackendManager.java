@@ -7,6 +7,7 @@ import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
+import org.apache.commons.io.IOUtils;
 import ru.hse.plugin.data.*;
 import ru.hse.plugin.exceptions.HttpException;
 import ru.hse.plugin.exceptions.UnauthorizedException;
@@ -155,8 +156,8 @@ public class BackendManager {
         return Arrays.asList(submissions);
     }
 
-    public void sendSubmission(Problem problem, Submission submission) throws UnauthorizedException, HttpException {
-        sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission);
+    public Submission sendSubmission(Problem problem, Submission submission) throws UnauthorizedException, HttpException {
+        return sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission, Submission.class);
     }
 
     public void sendProblemState(Problem problem) throws UnauthorizedException, HttpException {
@@ -191,7 +192,7 @@ public class BackendManager {
         }
     }
 
-    private void sendData(String URL, Object object) throws UnauthorizedException, HttpException {
+    private <T> T sendData(String URL, T object, Class<T> tClass) throws UnauthorizedException, HttpException {
         GenericUrl url = new GenericUrl(URL);
         try {
             JsonHttpContent content = new JsonHttpContent(JSON_FACTORY, object);
@@ -199,9 +200,9 @@ public class BackendManager {
             mediaType.setCharsetParameter(StandardCharsets.UTF_8);
             content.setMediaType(mediaType);
             HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, content);
+            req.setParser(new JsonObjectParser(JSON_FACTORY));
             HttpResponse resp = req.execute();
-            resp.disconnect();
-            //TODO: проверять status code
+            return resp.parseAs(tClass);
         } catch (HttpResponseException ex) {
             if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
                 throw new UnauthorizedException();
