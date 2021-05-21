@@ -109,17 +109,11 @@ public class BackendManager {
 
     private List<Problem> getAllProblems() throws UnauthorizedException {
         Problem[] problems = getData(USER_PROBLEMS_URL, Problem[].class);
-        for (Problem problem : problems) {
-            problem.setSubmissions(getProblemSubmissions(problem));
-        }
         return Arrays.asList(problems);
     }
 
     private List<Problem> getAllProblems(Team team) throws UnauthorizedException {
         Problem[] problems = getData(TEAM_PROBLEMS_URL.replace(REPLACEMENT, team.getName()), Problem[].class);
-        for (Problem problem : problems) {
-            problem.setSubmissions(getProblemSubmissions(problem));
-        }
         return Arrays.asList(problems);
     }
 
@@ -143,9 +137,6 @@ public class BackendManager {
 
     private List<Problem> getFolderProblems(String folderId) throws UnauthorizedException {
         Problem[] problems = getData(FOLDER_PROBLEMS_URL.replace(REPLACEMENT, folderId), Problem[].class);
-        for (Problem problem : problems) {
-            problem.setSubmissions(getProblemSubmissions(problem));
-        }
         return Arrays.asList(problems);
     }
 
@@ -208,6 +199,7 @@ public class BackendManager {
             content.setMediaType(mediaType);
             HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, content);
             HttpResponse resp = req.execute();
+            resp.disconnect();
             //TODO: проверять status code
         } catch (HttpResponseException ex) {
             if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
@@ -229,6 +221,7 @@ public class BackendManager {
             content.setMediaType(mediaType);
             HttpRequest req = REQUEST_FACTORY.buildPatchRequest(url, content);
             HttpResponse resp = req.execute();
+            resp.disconnect();
         } catch (HttpResponseException ex) {
             if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
                 throw new UnauthorizedException();

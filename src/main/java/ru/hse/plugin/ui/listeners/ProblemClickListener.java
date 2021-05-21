@@ -34,7 +34,25 @@ public class ProblemClickListener implements TreeSelectionListener {
         ProblemReference problemReference = (ProblemReference) component;
         Problem problem = problemReference.getProblem();
         if (problem == null) return;
-        ExplorerManager explorerManager = new ExplorerManager(project);
-        explorerManager.updateProblemPanel(problem);
+        if (problem.isSubmissionsSet()) {
+            ExplorerManager explorerManager = new ExplorerManager(project);
+            explorerManager.updateProblemPanel(problem);
+            return;
+        }
+        ProgressManager progressManager = new ProgressManagerImpl();
+        progressManager.run(new Task.Backgroundable(project, "Loading problem submissions", true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                BackendManager backendManager = new BackendManager(Credentials.getInstance());
+                try {
+                    problem.setSubmissions(backendManager.getProblemSubmissions(problem));
+                } catch (UnauthorizedException ex) {
+                    NotificationUtils.showAuthorisationFailedNotification(project);
+                    return;
+                }
+                ExplorerManager explorerManager = new ExplorerManager(project);
+                explorerManager.updateProblemPanel(problem);
+            }
+        });
     }
 }

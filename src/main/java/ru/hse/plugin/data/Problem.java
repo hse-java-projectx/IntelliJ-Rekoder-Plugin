@@ -25,6 +25,7 @@ public class Problem {
     private int numberOfSuccessfulSubmissions = 0;
 
     private List<Submission> submissions = Collections.emptyList();
+    private boolean submissionsSet = false;
 
     public Problem() {
 
@@ -73,7 +74,12 @@ public class Problem {
     }
 
     public void setSubmissions(List<Submission> submissions) {
+        submissionsSet = true;
         this.submissions = new ArrayList<>(submissions);
+    }
+
+    public boolean isSubmissionsSet() {
+        return submissionsSet;
     }
 
     public int getId() {

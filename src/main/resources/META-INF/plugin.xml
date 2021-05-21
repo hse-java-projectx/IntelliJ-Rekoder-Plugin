@@ -3,13 +3,14 @@
     <name>Rekoder</name>
     <vendor email="bubnovdanilbk@gmail.com" url="http://www.rekoder.xyz">Rekoder</vendor>
 
-<!--    <description><![CDATA[-->
-<!--    Rekoder Plugin!!-->
-<!--    ]]></description>-->
+    <description><![CDATA[
+    Plugin allows to interact with Rekoder service
+    ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <jcef.appRequiredArgumentsProvider implementation="ru.hse.plugin.settings.GpuDisabler"/>
         <applicationConfigurable groupId="tools" displayName="Rekoder" id="rekoder"
                                  instance="ru.hse.plugin.ui.settings.SettingsConfigurable"/>
         <toolWindow id="rekoder" secondary="true" anchor="right"

@@ -26,9 +26,10 @@ public class ExplorerManager {
     }
 
     public void clearEverything() {
-        clearProblemPanel();
-        clearProblemsTree();
         clearTeamsList();
+        clearProblemsTree();
+        clearProblemPanel();
+        ProblemPool.getInstance().clear();
     }
 
     public TreeModel getContentHolderTreeModel(ContentHolder contentHolder) throws UnauthorizedException {
@@ -119,19 +120,25 @@ public class ExplorerManager {
 
     private ProblemPanel getProblemPanel() {
         AtomicReference<ProblemPanel> problemPanel = new AtomicReference<>();
-        ReadAction.run(() -> problemPanel.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEM_PANEL)));
+        ThreadUtils.runInEdtAndWait(() -> {
+            problemPanel.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEM_PANEL));
+        });
         return problemPanel.get();
     }
 
     private JBList<ContentHolder> getTeamsList() {
         AtomicReference<JBList<ContentHolder>> list = new AtomicReference<>();
-        ReadAction.run(() -> list.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.TEAMS_LIST)));
+        ThreadUtils.runInEdtAndWait(() -> {
+            list.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.TEAMS_LIST));
+        });
         return list.get();
     }
 
     private Tree getProblemsTree() {
         AtomicReference<Tree> tree = new AtomicReference<>();
-        ReadAction.run(() -> tree.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEMS_TREE)));
+        ThreadUtils.runInEdtAndWait(() -> {
+            tree.set(RekoderToolWindowFactory.getExplorerDataContext(project).getData(DataKeys.PROBLEMS_TREE));
+        });
         return tree.get();
     }
 }

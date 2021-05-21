@@ -14,9 +14,12 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.jcef.JBCefApp;
+import com.intellij.ui.jcef.JCEFHtmlPanel;
 import com.intellij.util.ui.HtmlPanel;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SubmissionPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
     private final ComboBox<Submission> submissions = new ComboBox<>();
-    private final HtmlPanel problemStatement = new SimpleHtmlPanel();
+    private JCEFHtmlPanel problemStatement;
     private final HtmlPanel author = new SimpleHtmlPanel();
     private final ComboBox<String> languages = new ComboBox<>();
     private final JLabel verdict = new JLabel();
@@ -100,7 +103,7 @@ public class SubmissionPanel extends JPanel {
             submission.setOrder(k + 1);
             submissions.addItem(submission);
         }
-        problemStatement.setBody(newProblem.getStatement());
+        problemStatement.setHtml(newProblem.getStatement());
         problemName.setBody(newProblem.getName());
         testsPanel.setTests(newProblem.getTests());
     }
@@ -151,13 +154,16 @@ public class SubmissionPanel extends JPanel {
 
     public void clearProblem() {
         ComponentUtils.clearComponent(problemName);
-        ComponentUtils.clearComponent(problemStatement);
+//        ComponentUtils.clearComponent(problemStatement);
         ComponentUtils.clearComponent(author);
         ComponentUtils.clearComponent(verdict);
         ComponentUtils.clearComponent(timeConsumed);
         ComponentUtils.clearComponent(memoryConsumed);
         ComponentUtils.clearComponent(submissions);
         ComponentUtils.clearComponent(languages);
+        remove(problemStatement.getComponent());
+        Disposer.dispose(problemStatement);
+        setupProblemStatement(new GridBagConstraints());
         submit.setEnabled(false);
         test.setEnabled(false);
         reloadSubmission.setEnabled(false);
@@ -208,14 +214,15 @@ public class SubmissionPanel extends JPanel {
     }
 
     private void setupProblemStatement(GridBagConstraints c) {
-//        Disposer.register(project, problemStatement);
+        problemStatement = new RekoderHtmlPanel(JBCefApp.getInstance().createClient(), null);
+        Disposer.register(project, problemStatement);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 1;
         c.weighty = 0.5;
         c.gridwidth = 4;
         c.insets = JBUI.insets(5);
-        add(new JBScrollPane(problemStatement), c);
+        add(problemStatement.getComponent(), c);
     }
 
     private void setupAuthor(GridBagConstraints c) {

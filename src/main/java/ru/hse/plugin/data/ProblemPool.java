@@ -16,7 +16,7 @@ public class ProblemPool {
     }
 
     public void addProblem(Problem problem) {
-        problemsById.put(problem.getId(), problem);
+        problemsById.putIfAbsent(problem.getId(), problem);
     }
 
     public Problem getProblem(int id) {

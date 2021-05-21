@@ -32,14 +32,13 @@ import ru.hse.plugin.utils.ThreadUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.util.Arrays;
 
 public class ProblemPanel extends JPanel {
     private final HtmlPanel problemName = new SimpleHtmlPanel();
     private final JLabel problemState = new JLabel();
     private final JLabel numberOfAttempts = new JLabel();
-    private final HtmlPanel problemStatement = new SimpleHtmlPanel();
+    private JCEFHtmlPanel problemStatement;
+    private JLabel problemStatementLabel;
     private final HtmlPanel problemSource = new SimpleHtmlPanel();
     private final JPanel tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     private Problem problem;
@@ -55,7 +54,7 @@ public class ProblemPanel extends JPanel {
         problemState.setText(problem.getState().toString());
         problemState.setForeground(problem.getState().getColor());
         numberOfAttempts.setText(String.valueOf(problem.getNumberOfAttempts()));
-        problemStatement.setBody(problem.getStatement());
+        problemStatement.setHtml(problem.getStatement());
         problemSource.setBody(problem.getSource());
         tagsPanel.removeAll();
         problem.getTags().forEach(t -> tagsPanel.add(new JLabel(t)));
@@ -68,8 +67,11 @@ public class ProblemPanel extends JPanel {
         ComponentUtils.clearComponent(problemName);
         ComponentUtils.clearComponent(problemState);
         ComponentUtils.clearComponent(numberOfAttempts);
-        ComponentUtils.clearComponent(problemStatement);
+//        ComponentUtils.clearComponent(problemStatement);
         ComponentUtils.clearComponent(problemSource);
+        remove(problemStatement.getComponent());
+        Disposer.dispose(problemStatement);
+        setupProblemStatement(new GridBagConstraints());
         tagsPanel.removeAll();
         startSolving.setEnabled(false);
         previewCode.setEnabled(false);
@@ -90,7 +92,7 @@ public class ProblemPanel extends JPanel {
     }
 
     private void setupProblemName(GridBagConstraints c) {
-        setupLabel(0, 0, "Problem name:", c);
+        setupLabel(new JLabel("Problem name:"), 0, 0, c);
         c.gridx = 1;
         c.gridy = 0;
         c.weighty = 0.0;
@@ -99,7 +101,7 @@ public class ProblemPanel extends JPanel {
     }
 
     private void setupProblemState(GridBagConstraints c) {
-        setupLabel(0, 3, "State:", c);
+        setupLabel(new JLabel("State:"), 0, 3, c);
         c.gridx = 1;
         c.gridy = 3;
         c.weighty = 0.0;
@@ -109,7 +111,7 @@ public class ProblemPanel extends JPanel {
     }
 
     private void setupNumberOfAttempts(GridBagConstraints c) {
-        setupLabel(2, 3, "Number of attempts:", c);
+        setupLabel(new JLabel("Number of attempts:"), 2, 3, c);
         numberOfAttempts.setForeground(JBColor.BLUE);
         numberOfAttempts.setHorizontalAlignment(SwingConstants.RIGHT);
         numberOfAttempts.setOpaque(true);
@@ -125,19 +127,24 @@ public class ProblemPanel extends JPanel {
     }
 
     private void setupProblemStatement(GridBagConstraints c) {
-        setupLabel(0, 1, "Statement:", c);
-//        Disposer.register(project, problemStatement);
+        if (problemStatementLabel != null) {
+            remove(problemStatementLabel);
+        }
+        problemStatementLabel = new JLabel("Statement:");
+        setupLabel(problemStatementLabel, 0, 1, c);
+        problemStatement = new RekoderHtmlPanel(JBCefApp.getInstance().createClient(), null);
+        Disposer.register(project, problemStatement);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 2;
         c.weighty = 0.5;
         c.gridwidth = 4;
         c.insets = JBUI.insets(0, 5, 5, 5);
-        add(new JBScrollPane(problemStatement), c);
+        add(problemStatement.getComponent(), c);
     }
 
     private void setupProblemSource(GridBagConstraints c) {
-        setupLabel(0, 4, "Source:", c);
+        setupLabel(new JLabel("Source:"), 0, 4, c);
         c.gridx = 1;
         c.gridy = 4;
         c.weighty = 0.0;
@@ -146,7 +153,7 @@ public class ProblemPanel extends JPanel {
     }
 
     private void setupTags(GridBagConstraints c) {
-        setupLabel(0, 5, "Tags:", c);
+        setupLabel(new JLabel("Tags:"), 0, 5, c);
         c.gridx = 1;
         c.gridy = 5;
         c.weighty = 0.0;
@@ -209,8 +216,7 @@ public class ProblemPanel extends JPanel {
         return problem;
     }
 
-    private void setupLabel(int x, int y, String name, GridBagConstraints c) {
-        JLabel label = new JLabel(name);
+    private void setupLabel(JLabel label, int x, int y, GridBagConstraints c) {
         if (x == 0) {
             label.setHorizontalAlignment(SwingConstants.LEFT);
             c.anchor = GridBagConstraints.LINE_START;

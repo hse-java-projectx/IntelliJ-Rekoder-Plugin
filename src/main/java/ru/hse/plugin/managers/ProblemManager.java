@@ -35,7 +35,6 @@ public class ProblemManager {
     public void clearEverything() {
         clearProblem();
         clearTests();
-        ProblemPool.getInstance().clear();
     }
 
     public List<Test> getTests() {
@@ -127,13 +126,17 @@ public class ProblemManager {
 
     private TestsPanel getTestsPanel() {
         AtomicReference<TestsPanel> testsPanel = new AtomicReference<>();
-        ReadAction.run(() -> testsPanel.set(RekoderToolWindowFactory.getProblemDataContext(project).getData(DataKeys.TESTS_PANEL)));
+        ThreadUtils.runInEdtAndWait(() -> {
+            testsPanel.set(RekoderToolWindowFactory.getProblemDataContext(project).getData(DataKeys.TESTS_PANEL));
+        });
         return testsPanel.get();
     }
 
     private SubmissionPanel getSubmissionPanel() {
         AtomicReference<SubmissionPanel> submissionPanel = new AtomicReference<>();
-        ReadAction.run(() -> submissionPanel.set(RekoderToolWindowFactory.getProblemDataContext(project).getData(DataKeys.SUBMISSION_PANEL)));
+        ThreadUtils.runInEdtAndWait(() -> {
+            submissionPanel.set(RekoderToolWindowFactory.getProblemDataContext(project).getData(DataKeys.SUBMISSION_PANEL));
+        });
         return submissionPanel.get();
     }
 }
