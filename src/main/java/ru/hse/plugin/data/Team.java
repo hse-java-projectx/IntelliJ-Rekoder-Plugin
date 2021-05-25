@@ -7,6 +7,8 @@ public class Team extends ContentHolder {
     private String name = "";
     @Key
     private int rootFolderId = -1;
+    @Key
+    private String id = "";
 
     public Team() {
 
@@ -20,8 +22,15 @@ public class Team extends ContentHolder {
         return rootFolderId;
     }
 
+    public String getId() {
+        return id;
+    }
+
     @Override
     public String toString() {
+        if (name == null || name.isEmpty()) {
+            return id;
+        }
         return name;
     }
 }

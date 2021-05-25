@@ -55,7 +55,8 @@ public class LoginAction extends AnAction {
                 continue;
             }
             credentials.setLogin(dialog.getUsername());
-            credentials.setToken(dialog.getPassword());
+            credentials.setToken(token);
+            credentials.setRemember(rememberByDefault);
 
             RefreshAction refreshAction = new RefreshAction();
             refreshAction.actionPerformed(e);

@@ -7,8 +7,6 @@ import java.util.List;
 public class User extends ContentHolder {
     @Key
     private String name = "";
-    @Key("teamIds")
-    private List<String> teams;
     @Key
     private int rootFolderId = -1;
 
@@ -16,18 +14,15 @@ public class User extends ContentHolder {
 
     }
 
-    public User(String name, List<String> teams) {
+    public User(String name) {
         this.name = name;
-        this.teams = teams;
     }
 
     public String getName() {
         return name;
     }
 
-    public List<String> getTeams() {
-        return teams;
-    }
+
 
     public int getRootFolderId() {
         return rootFolderId;

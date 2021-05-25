@@ -9,6 +9,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.exceptions.HttpException;
 import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.ExplorerManager;
@@ -21,6 +22,11 @@ public class RefreshAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getProject();
         if (project == null) {
+            return;
+        }
+        String token = Credentials.getInstance().getToken();
+        if (token == null || token.isEmpty()) {
+            NotificationUtils.showAuthorisationFailedNotification(project);
             return;
         }
 

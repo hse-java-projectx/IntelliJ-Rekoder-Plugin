@@ -155,16 +155,16 @@ public class SubmissionPanel extends JPanel {
 
     public void clearProblem() {
         ComponentUtils.clearComponent(problemName);
-//        ComponentUtils.clearComponent(problemStatement);
+        ComponentUtils.clearComponent(problemStatement);
         ComponentUtils.clearComponent(author);
         ComponentUtils.clearComponent(verdict);
         ComponentUtils.clearComponent(timeConsumed);
         ComponentUtils.clearComponent(memoryConsumed);
         ComponentUtils.clearComponent(submissions);
         ComponentUtils.clearComponent(languages);
-        remove(problemStatement.getComponent());
-        Disposer.dispose(problemStatement);
-        setupProblemStatement(new GridBagConstraints());
+//        remove(problemStatement.getComponent());
+//        Disposer.dispose(problemStatement);
+//        setupProblemStatement(new GridBagConstraints());
         submit.setEnabled(false);
         test.setEnabled(false);
         reloadSubmission.setEnabled(false);

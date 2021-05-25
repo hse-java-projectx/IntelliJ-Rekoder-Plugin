@@ -36,11 +36,15 @@ public class ContentHolderClickListener implements ListSelectionListener {
         if (contentHolder == null) {
             return;
         }
+        ExplorerManager explorerManager = new ExplorerManager(project);
+        if (contentHolder.getProblemsModel() != null) {
+            explorerManager.updateProblemsTree(contentHolder.getProblemsModel());
+            return;
+        }
         ProgressManager progressManager = new ProgressManagerImpl();
         progressManager.run(new Task.Backgroundable(project, "Loading folders", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                ExplorerManager explorerManager = new ExplorerManager(project);
                 try {
                     TreeModel model = explorerManager.getContentHolderTreeModel(contentHolder);
                     explorerManager.updateProblemsTree(model);

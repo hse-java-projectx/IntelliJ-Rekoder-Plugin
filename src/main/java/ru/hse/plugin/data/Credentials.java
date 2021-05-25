@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class Credentials implements PersistentStateComponent<Credentials> {
     private String login;
     private String token;
+    private boolean remember;
 
     private Credentials() {
 
@@ -38,8 +39,19 @@ public class Credentials implements PersistentStateComponent<Credentials> {
         return ServiceManager.getService(Credentials.class);
     }
 
+    public boolean isRemember() {
+        return remember;
+    }
+
+    public void setRemember(boolean remember) {
+        this.remember = remember;
+    }
+
     @Override
     public Credentials getState() {
+        if (!remember) {
+            token = "";
+        }
         return this;
     }
 

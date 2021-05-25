@@ -67,11 +67,11 @@ public class ProblemPanel extends JPanel {
         ComponentUtils.clearComponent(problemName);
         ComponentUtils.clearComponent(problemState);
         ComponentUtils.clearComponent(numberOfAttempts);
-//        ComponentUtils.clearComponent(problemStatement);
+        ComponentUtils.clearComponent(problemStatement);
         ComponentUtils.clearComponent(problemSource);
-        remove(problemStatement.getComponent());
-        Disposer.dispose(problemStatement);
-        setupProblemStatement(new GridBagConstraints());
+//        remove(problemStatement.getComponent());
+//        Disposer.dispose(problemStatement);
+//        setupProblemStatement(new GridBagConstraints());
         tagsPanel.removeAll();
         startSolving.setEnabled(false);
         previewCode.setEnabled(false);

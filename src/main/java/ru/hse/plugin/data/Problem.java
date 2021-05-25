@@ -23,6 +23,8 @@ public class Problem {
     private List<TestImpl> tests = Collections.emptyList();
     @Key
     private int numberOfSuccessfulSubmissions = 0;
+    @Key
+    private Owner owner;
 
     private List<Submission> submissions = Collections.emptyList();
     private boolean submissionsSet = false;
@@ -76,6 +78,7 @@ public class Problem {
     public void setSubmissions(List<Submission> submissions) {
         submissionsSet = true;
         this.submissions = new ArrayList<>(submissions);
+        this.numberOfSuccessfulSubmissions = (int) this.submissions.stream().filter(s -> s.getVerdict().equals("ok")).count();
     }
 
     public boolean isSubmissionsSet() {
@@ -86,9 +89,26 @@ public class Problem {
         return id;
     }
 
+    public String getOwnerId() {
+        return owner.id;
+    }
+
+    public OwnerType getOwnerType() {
+        if (owner.type.equals("USER")) {
+            return OwnerType.USER;
+        } else {
+            return OwnerType.TEAM;
+        }
+    }
+
     @Override
     public String toString() {
         return name;
+    }
+
+    public enum OwnerType {
+        USER,
+        TEAM,
     }
 
     public enum State {
@@ -127,5 +147,12 @@ public class Problem {
         };
 
         public abstract Color getColor();
+    }
+
+    public static class Owner {
+        @Key
+        private String type;
+        @Key
+        private String id;
     }
 }

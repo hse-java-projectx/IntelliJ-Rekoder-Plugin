@@ -8,6 +8,7 @@ import java.util.List;
 public class Submission {
     @Key
     private int id = -1;
+    @Key("authorId")
     private String author = "";
     @Key
     private String sourceCode = "";

@@ -7,6 +7,7 @@ import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.Key;
 import org.apache.commons.io.IOUtils;
 import ru.hse.plugin.data.*;
 import ru.hse.plugin.exceptions.HttpException;
@@ -26,6 +27,7 @@ public class BackendManager {
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private static final String REPLACEMENT = "${}";
     private static final String API_URL = new PropertiesUtils("/constants/constants.properties").getKey("apiUrl", "");
+    private static final String LOGIN_URL = API_URL + "login";
     private final String USER_URL;
     private static final String TEAMS_URL = API_URL + "teams/";
     private static final String TEAM_PROBLEMS_URL = TEAMS_URL + REPLACEMENT + "/problems/";
@@ -36,7 +38,9 @@ public class BackendManager {
     private static final String SUBMISSIONS_URL = API_URL + "submissions/";
     private static final String PROBLEM_SUBMISSIONS_URL = PROBLEMS_URL + REPLACEMENT + "/submissions/";
     private final String USER_PROBLEMS_URL;
+    private final String USER_TEAMS_URL;
     private static final int UNAUTHORIZED_CODE = 401;
+    private static final int FORBIDDEN_CODE = 403;
 
     private final Credentials credentials;
 
@@ -44,26 +48,31 @@ public class BackendManager {
         this.credentials = credentials;
         USER_URL = API_URL + "users/" + credentials.getLogin() + "/";
         USER_PROBLEMS_URL = USER_URL + "problems/";
+        USER_TEAMS_URL = USER_URL + "teams/";
     }
 
     // returns token
     @Nullable
     public String login(String login, String password) {
+        LoginInfo loginInfo = new LoginInfo(login, password);
+        GenericUrl url = new GenericUrl(LOGIN_URL);
         try {
-            TimeUnit.SECONDS.sleep(4);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            JsonHttpContent content = new JsonHttpContent(JSON_FACTORY, loginInfo);
+            HttpMediaType mediaType = new HttpMediaType("application/json");
+            mediaType.setCharsetParameter(StandardCharsets.UTF_8);
+            content.setMediaType(mediaType);
+            HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, content);
+            req.setParser(new JsonObjectParser(JSON_FACTORY));
+            HttpResponse resp = req.execute();
+            return resp.getHeaders().getAuthorization();
+        } catch (Exception ex) {
+            return null;
         }
-        return "token";
     }
 
     public List<Team> getTeams() throws UnauthorizedException, HttpException {
-        List<Team> list = new ArrayList<>();
-        User user = getUser();
-        for (String teamName : user.getTeams()) {
-            list.add(getTeam(teamName));
-        }
-        return list;
+        Team[] teams = getData(USER_TEAMS_URL, Team[].class);
+        return Arrays.asList(teams);
     }
 
     public Team getTeam(String teamName) throws UnauthorizedException, HttpException {
@@ -115,7 +124,7 @@ public class BackendManager {
     }
 
     private List<Problem> getAllProblems(Team team) throws UnauthorizedException, HttpException {
-        Problem[] problems = getData(TEAM_PROBLEMS_URL.replace(REPLACEMENT, team.getName()), Problem[].class);
+        Problem[] problems = getData(TEAM_PROBLEMS_URL.replace(REPLACEMENT, team.getId()), Problem[].class);
         return Arrays.asList(problems);
     }
 
@@ -182,8 +191,7 @@ public class BackendManager {
             //TODO: проверять status code
             return resp.parseAs(tClass);
         } catch (HttpResponseException ex) {
-            ex.printStackTrace();
-            if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
+            if (ex.getStatusCode() == UNAUTHORIZED_CODE || ex.getStatusCode() == FORBIDDEN_CODE) {
                 throw new UnauthorizedException();
             }
             throw new HttpException(ex);
@@ -200,11 +208,12 @@ public class BackendManager {
             mediaType.setCharsetParameter(StandardCharsets.UTF_8);
             content.setMediaType(mediaType);
             HttpRequest req = REQUEST_FACTORY.buildPostRequest(url, content);
+            req.getHeaders().setAuthorization(credentials.getToken());
             req.setParser(new JsonObjectParser(JSON_FACTORY));
             HttpResponse resp = req.execute();
             return resp.parseAs(tClass);
         } catch (HttpResponseException ex) {
-            if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
+            if (ex.getStatusCode() == UNAUTHORIZED_CODE || ex.getStatusCode() == FORBIDDEN_CODE) {
                 throw new UnauthorizedException();
             }
             throw new HttpException(ex);
@@ -221,15 +230,28 @@ public class BackendManager {
             mediaType.setCharsetParameter(StandardCharsets.UTF_8);
             content.setMediaType(mediaType);
             HttpRequest req = REQUEST_FACTORY.buildPatchRequest(url, content);
+            req.getHeaders().setAuthorization(credentials.getToken());
             HttpResponse resp = req.execute();
             resp.disconnect();
         } catch (HttpResponseException ex) {
-            if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
+            if (ex.getStatusCode() == UNAUTHORIZED_CODE || ex.getStatusCode() == FORBIDDEN_CODE) {
                 throw new UnauthorizedException();
             }
             throw new HttpException(ex);
         } catch (Exception ex) {
             throw new HttpException(ex);
+        }
+    }
+
+    private static class LoginInfo {
+        @Key
+        public String id;
+        @Key
+        public String password;
+
+        public LoginInfo(String id, String password) {
+            this.id = id;
+            this.password = password;
         }
     }
 }
