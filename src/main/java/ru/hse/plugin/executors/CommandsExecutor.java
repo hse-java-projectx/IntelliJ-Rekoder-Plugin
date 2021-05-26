@@ -24,8 +24,8 @@ public class CommandsExecutor {
     private static final String PROBLEM_STATEMENT = "\\$PROBLEM_STATEMENT";
     private static final String SOURCE_CODE = "\\$SOURCE_CODE";
     private static final String LANGUAGE = "\\$LANGUAGE";
-    private static final String FILENAME = "\\$FILENAME";
-    private static final String FILEPATH = "\\$FILEPATH";
+    private static final String FILENAME = "\\$FILE_NAME";
+    private static final String FILEPATH = "\\$FILE_PATH";
     private static final Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
 
 

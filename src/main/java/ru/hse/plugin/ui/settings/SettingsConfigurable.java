@@ -1,7 +1,9 @@
 package ru.hse.plugin.ui.settings;
 
 import com.intellij.openapi.options.SearchableConfigurable;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBTextField;
+import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.JBUI;
 import icons.RekoderIcons;
@@ -42,9 +44,6 @@ public class SettingsConfigurable implements SearchableConfigurable {
 
         reset();
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
         JButton newCommandButton = new JButton("New command");
         newCommandButton.addActionListener(a -> {
             wasAdded = true;
@@ -52,12 +51,22 @@ public class SettingsConfigurable implements SearchableConfigurable {
             mainPanel.updateUI();
         });
         newCommandButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        mainPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        panel.add(newCommandButton);
-        panel.add(mainPanel);
+        JButton helpButton = new JButton("Help");
+        helpButton.addActionListener(a -> {
+            ThreadUtils.runInEdt(() -> {
+                new HelpDialogWrapper().showAndGet();
+            });
+        });
 
-        return panel;
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonsPanel.add(newCommandButton);
+        buttonsPanel.add(helpButton);
+
+        return FormBuilder.createFormBuilder().
+                addComponent(buttonsPanel).
+                addComponentFillVertically(mainPanel, 0).
+                getPanel();
     }
 
     @Override
@@ -188,6 +197,33 @@ public class SettingsConfigurable implements SearchableConfigurable {
         public Command makeCommand() {
             saveState();
             return new Command(problemOwner, commandText, isEnabled);
+        }
+    }
+
+    private static class HelpDialogWrapper extends DialogWrapper {
+        public HelpDialogWrapper() {
+            super(true);
+            init();
+            setTitle("Help");
+        }
+
+        @Nullable
+        @Override
+        protected JComponent createCenterPanel() {
+            return FormBuilder.createFormBuilder().
+                    addComponent(new JLabel("Available variables:")).
+                    addLabeledComponent("$PROBLEM_NAME", new JLabel("Name of the problem")).
+                    addLabeledComponent("$PROBLEM_STATEMENT", new JLabel("Statement of the problem")).
+                    addLabeledComponent("$SOURCE_CODE", new JLabel("Source code of the submission")).
+                    addLabeledComponent("$LANGUAGE", new JLabel("Programming language of the submission")).
+                    addLabeledComponent("$FILE_NAME", new JLabel("Name of the file with the source code")).
+                    addLabeledComponent("$FILE_PATH", new JLabel("Path of the file with the source code")).
+                    getPanel();
+        }
+
+        @Override
+        protected Action @NotNull [] createActions() {
+            return new Action[]{ getOKAction() };
         }
     }
 }

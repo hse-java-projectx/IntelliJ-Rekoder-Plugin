@@ -405,6 +405,7 @@ public class SubmissionPanel extends JPanel {
                                 problem.getSubmissions().add(submission);
                                 setCurrentProblem(problem);
                             });
+                            NotificationUtils.showToolWindowMessage("Submitted successfully", NotificationType.INFORMATION, project);
                             Document document = editor.get().getDocument();
                             VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                             progressManager.run(new Task.Backgroundable(project, "Running commands", true) {
