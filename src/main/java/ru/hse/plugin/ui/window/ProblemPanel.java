@@ -55,7 +55,7 @@ public class ProblemPanel extends JPanel {
         problemState.setForeground(problem.getState().getColor());
         numberOfAttempts.setText(String.valueOf(problem.getNumberOfAttempts()));
         problemStatement.setHtml(problem.getStatement());
-        problemSource.setBody(problem.getSource());
+        problemSource.setBody(String.format("<a href=%s>%s<a>", problem.getSource(), problem.getSource()));
         tagsPanel.removeAll();
         problem.getTags().forEach(t -> tagsPanel.add(new JLabel(t)));
         startSolving.setEnabled(true);

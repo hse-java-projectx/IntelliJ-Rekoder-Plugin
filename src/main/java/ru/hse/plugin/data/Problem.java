@@ -16,6 +16,7 @@ public class Problem {
     private String name = "";
     @Key
     private String statement = "";
+    @Key("problemUrl")
     private String source = "";
     @Key
     private List<String> tags = Collections.emptyList();

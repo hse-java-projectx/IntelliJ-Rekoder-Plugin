@@ -26,6 +26,7 @@ public class CommandsExecutor {
     private static final String LANGUAGE = "\\$LANGUAGE";
     private static final String FILENAME = "\\$FILE_NAME";
     private static final String FILEPATH = "\\$FILE_PATH";
+    private static final String PROBLEM_URL = "\\$PROBLEM_URL";
     private static final Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
 
 
@@ -86,6 +87,7 @@ public class CommandsExecutor {
             element = element.replaceAll(LANGUAGE, submission.getCompiler());
             element = element.replaceAll(FILENAME, file.getName());
             element = element.replaceAll(FILEPATH, file.getPath());
+            element = element.replaceAll(PROBLEM_URL, problem.getSource());
             args.set(k, element);
         }
         return args;

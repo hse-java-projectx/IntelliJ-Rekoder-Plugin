@@ -218,6 +218,7 @@ public class SettingsConfigurable implements SearchableConfigurable {
                     addLabeledComponent("$LANGUAGE", new JLabel("Programming language of the submission")).
                     addLabeledComponent("$FILE_NAME", new JLabel("Name of the file with the source code")).
                     addLabeledComponent("$FILE_PATH", new JLabel("Path of the file with the source code")).
+                    addLabeledComponent("$PROBLEM_URL", new JLabel("Problem URL is exists, empty otherwise")).
                     getPanel();
         }
 

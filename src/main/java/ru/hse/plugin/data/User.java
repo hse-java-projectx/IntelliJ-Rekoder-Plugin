@@ -9,6 +9,8 @@ public class User extends ContentHolder {
     private String name = "";
     @Key
     private int rootFolderId = -1;
+    @Key
+    private String id = "";
 
     public User() {
 
@@ -30,6 +32,9 @@ public class User extends ContentHolder {
 
     @Override
     public String toString() {
-        return name;
+        if (!name.isEmpty()) {
+            return name;
+        }
+        return id;
     }
 }

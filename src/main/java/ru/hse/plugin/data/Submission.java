@@ -14,9 +14,8 @@ public class Submission {
     private String sourceCode = "";
     @Key
     private String compiler = "";
-    private String verdict = "";
-    private String timeConsumed = "";
-    private String memoryConsumed = "";
+    @Key
+    private Feedback feedback = new Feedback();
     private boolean isSent = true;
     private String order = "-1";
 
@@ -25,9 +24,7 @@ public class Submission {
         this.author = other.author;
         this.sourceCode = other.sourceCode;
         this.compiler = other.compiler;
-        this.verdict = other.verdict;
-        this.timeConsumed = other.timeConsumed;
-        this.memoryConsumed = other.memoryConsumed;
+        this.feedback = other.feedback;
     }
 
     public String getSourceCode() {
@@ -47,27 +44,27 @@ public class Submission {
     }
 
     public String getVerdict() {
-        return verdict;
+        return feedback.verdict;
     }
 
     public void setVerdict(String verdict) {
-        this.verdict = verdict;
+        this.feedback.verdict = verdict;
     }
 
     public String getTimeConsumed() {
-        return timeConsumed;
+        return feedback.timeConsumed;
     }
 
     public void setTimeConsumed(String timeConsumed) {
-        this.timeConsumed = timeConsumed;
+        this.feedback.timeConsumed = timeConsumed;
     }
 
     public String getMemoryConsumed() {
-        return memoryConsumed;
+        return feedback.memoryConsumed;
     }
 
     public void setMemoryConsumed(String memoryConsumed) {
-        this.memoryConsumed = memoryConsumed;
+        this.feedback.memoryConsumed = memoryConsumed;
     }
 
     public String getAuthor() {
@@ -105,5 +102,16 @@ public class Submission {
     @Override
     public String toString() {
         return order;
+    }
+
+    public static class Feedback {
+        @Key
+        private String verdict = "na";
+        @Key
+        private String comment = "";
+        @Key
+        private String timeConsumed = "";
+        @Key
+        private String memoryConsumed = "";
     }
 }
