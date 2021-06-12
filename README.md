@@ -5,8 +5,13 @@
 View, test and submit problems to **Rekoder**
 <!-- Plugin description end -->
 
-## Current State
-![Main window](./images/20-05-21-1.png)
-![Problem window](./images/20-05-21-2.png)
-![Code window](./images/20-05-21-3.png)
-![Settings](./images/20-05-21-4.png)
+## Usage
+
+### Explore problems
+![Explore problems](images/ExploreProblems.gif)
+
+### Solve, test and submit problems
+![Solve problems](./images/SolveProblems.gif)
+
+### Run external commands
+![Run commands](./images/RunCommands.gif)
