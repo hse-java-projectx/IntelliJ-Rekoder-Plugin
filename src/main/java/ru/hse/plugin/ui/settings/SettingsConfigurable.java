@@ -131,28 +131,15 @@ public class SettingsConfigurable implements SearchableConfigurable {
         private boolean isEnabled;
 
         public CommandPanel(Command command) {
-            super();
+            super(new GridBagLayout());
+
             problemOwnerField = new JBTextField(command.getProblemOwner());
             commandTextField = new JBTextField(command.getCommandText());
+
             enabledBox = new JCheckBox();
             enabledBox.setSelected(command.isEnabled());
-            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-            JPanel panel = new JPanel(new GridBagLayout());
-            GridBag gridBag = new GridBag();
-            gridBag.setDefaultFill(GridBagConstraints.HORIZONTAL);
-            gridBag.setDefaultInsets(0, 5, 0, 5);
-
-            JLabel problemOwnerLabel = new JLabel("Problem owner:");
-            JLabel commandTextLabel = new JLabel("Command text:");
-
-            panel.add(problemOwnerLabel, gridBag.nextLine().next());
-            panel.add(problemOwnerField, gridBag.next().weightx(1.0));
-
-            panel.add(commandTextLabel, gridBag.nextLine().next());
-            panel.add(commandTextField, gridBag.next().weightx(1.0));
-            add(panel);
-
+            enabledBox.setText("Enable");
+            enabledBox.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JButton delete = new JButton(RekoderIcons.DELETE_TEST);
             delete.addActionListener(a -> {
@@ -170,14 +157,21 @@ public class SettingsConfigurable implements SearchableConfigurable {
                 });
             });
             delete.setAlignmentX(Component.CENTER_ALIGNMENT);
-            JPanel rightPanel = new JPanel();
-            rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-            enabledBox.setText("Enable");
-            enabledBox.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            rightPanel.add(enabledBox);
-            rightPanel.add(delete);
-            add(rightPanel);
+            GridBag gridBag = new GridBag();
+            gridBag.setDefaultFill(GridBagConstraints.HORIZONTAL);
+            gridBag.setDefaultInsets(0, 5, 0, 5);
+
+            JLabel problemOwnerLabel = new JLabel("Problem owner:");
+            JLabel commandTextLabel = new JLabel("Command text:");
+
+            add(problemOwnerLabel, gridBag.nextLine().next());
+            add(problemOwnerField, gridBag.next().weightx(1.0));
+            add(enabledBox, gridBag.next().anchor(GridBagConstraints.LINE_END));
+
+            add(commandTextLabel, gridBag.nextLine().next());
+            add(commandTextField, gridBag.next().weightx(1.0));
+            add(delete, gridBag.next().anchor(GridBagConstraints.LINE_END));
 
             saveState();
         }

@@ -14,7 +14,6 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
@@ -24,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.hse.plugin.utils.NotificationUtils;
 import ru.hse.plugin.utils.ThreadUtils;
 
-import javax.management.Notification;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -67,7 +65,7 @@ public class DefaultExecutor {
                     Writer writer = new BufferedWriter(new OutputStreamWriter(handler.getProcessInput(), StandardCharsets.UTF_8));
                     writer.write(input);
                     writer.write("\n");
-                    writer.close();
+                    writer.flush();
                 } catch (IOException e) {
                     NotificationUtils.showToolWindowMessage("Failed to set input", NotificationType.ERROR, project);
                 }
