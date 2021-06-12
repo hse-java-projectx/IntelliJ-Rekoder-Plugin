@@ -8,7 +8,7 @@ public class Command {
     public Command() {
         problemOwner = "";
         commandText = "";
-        isEnabled = false;
+        isEnabled = true;
     }
 
     public Command(String problemOwner, String commandText, boolean isEnabled) {

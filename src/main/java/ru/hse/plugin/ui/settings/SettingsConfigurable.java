@@ -213,6 +213,9 @@ public class SettingsConfigurable implements SearchableConfigurable {
                     addLabeledComponent("$FILE_NAME", new JLabel("Name of the file with the source code")).
                     addLabeledComponent("$FILE_PATH", new JLabel("Path of the file with the source code")).
                     addLabeledComponent("$PROBLEM_URL", new JLabel("Problem URL is exists, empty otherwise")).
+                    addLabeledComponent("$PROBLEM_ID", new JLabel("Rekoder problem id")).
+                    addLabeledComponent("$SUBMISSION_ID", new JLabel("Rekoder submission id")).
+                    addLabeledComponent("$REKODER_TOKEN", new JLabel("User token")).
                     getPanel();
         }
 

@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import ru.hse.plugin.data.Credentials;
 import ru.hse.plugin.data.Problem;
 import ru.hse.plugin.data.Submission;
 import ru.hse.plugin.utils.NotificationUtils;
@@ -27,6 +28,9 @@ public class CommandsExecutor {
     private static final String FILENAME = "\\$FILE_NAME";
     private static final String FILEPATH = "\\$FILE_PATH";
     private static final String PROBLEM_URL = "\\$PROBLEM_URL";
+    private static final String PROBLEM_ID = "\\$PROBLEM_ID";
+    private static final String SUBMISSION_ID = "\\$SUBMISSION_ID";
+    private static final String REKODER_TOKEN = "\\$REKODER_TOKEN";
     private static final Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
 
 
@@ -88,6 +92,13 @@ public class CommandsExecutor {
             element = element.replaceAll(FILENAME, file.getName());
             element = element.replaceAll(FILEPATH, file.getPath());
             element = element.replaceAll(PROBLEM_URL, problem.getSource());
+            element = element.replaceAll(PROBLEM_ID, String.valueOf(problem.getId()));
+            element = element.replaceAll(SUBMISSION_ID, String.valueOf(submission.getId()));
+            String token = Credentials.getInstance().getToken();
+            if (token == null) {
+                token = "NO_TOKEN";
+            }
+            element = element.replaceAll(REKODER_TOKEN, token);
             args.set(k, element);
         }
         return args;
