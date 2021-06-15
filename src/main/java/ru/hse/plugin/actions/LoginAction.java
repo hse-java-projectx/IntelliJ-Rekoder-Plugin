@@ -12,6 +12,8 @@ import com.intellij.vcsUtil.AuthDialog;
 import org.jetbrains.annotations.NotNull;
 
 import ru.hse.plugin.data.Credentials;
+import ru.hse.plugin.exceptions.HttpException;
+import ru.hse.plugin.exceptions.UnauthorizedException;
 import ru.hse.plugin.managers.BackendManager;
 import ru.hse.plugin.utils.NotificationUtils;
 
@@ -40,23 +42,25 @@ public class LoginAction extends AnAction {
             try {
                 String finalLogin = login;
                 String finalPassword = password;
-                token =  progressManager.run(new Task.WithResult<String, Exception>(project, "Login", true) {
+                token =  progressManager.run(new Task.WithResult<String, HttpException>(project, "Login", true) {
                     @Override
-                    protected String compute(@NotNull ProgressIndicator indicator) {
+                    protected String compute(@NotNull ProgressIndicator indicator) throws HttpException {
                         return new BackendManager(Credentials.getInstance()).login(finalLogin, finalPassword);
                     }
                 });
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
-
-            if (token == null) {
-                NotificationUtils.showToolWindowMessage("Login failed", NotificationType.ERROR, project);
+            } catch (UnauthorizedException ex) {
+                NotificationUtils.showAuthorisationFailedNotification(project);
+                continue;
+            } catch (HttpException ex) {
+                NotificationUtils.showNetworkProblemNotification(project);
                 continue;
             }
+
             credentials.setLogin(dialog.getUsername());
             credentials.setToken(token);
             credentials.setRemember(rememberByDefault);
+
+            NotificationUtils.showToolWindowMessage("Successfully logged in", NotificationType.INFORMATION, project);
 
             RefreshAction refreshAction = new RefreshAction();
             refreshAction.actionPerformed(e);

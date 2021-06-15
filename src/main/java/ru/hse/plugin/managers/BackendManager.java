@@ -53,7 +53,7 @@ public class BackendManager {
 
     // returns token
     @Nullable
-    public String login(String login, String password) {
+    public String login(String login, String password) throws HttpException {
         LoginInfo loginInfo = new LoginInfo(login, password);
         GenericUrl url = new GenericUrl(LOGIN_URL);
         try {
@@ -65,25 +65,30 @@ public class BackendManager {
             req.setParser(new JsonObjectParser(JSON_FACTORY));
             HttpResponse resp = req.execute();
             return resp.getHeaders().getAuthorization();
+        } catch (HttpResponseException ex) {
+            if (ex.getStatusCode() == UNAUTHORIZED_CODE) {
+                throw new UnauthorizedException(ex);
+            }
+            throw new HttpException(ex);
         } catch (Exception ex) {
-            return null;
+            throw new HttpException(ex);
         }
     }
 
-    public List<Team> getTeams() throws UnauthorizedException, HttpException {
+    public List<Team> getTeams() throws HttpException {
         Team[] teams = getData(USER_TEAMS_URL, Team[].class);
         return Arrays.asList(teams);
     }
 
-    public Team getTeam(String teamName) throws UnauthorizedException, HttpException {
+    public Team getTeam(String teamName) throws HttpException {
         return getData(TEAMS_URL + teamName, Team.class);
     }
 
-    public User getUser() throws UnauthorizedException, HttpException {
+    public User getUser() throws HttpException {
         return getData(USER_URL, User.class);
     }
 
-    public List<TreeFile> getRootFiles(Team team) throws UnauthorizedException, HttpException {
+    public List<TreeFile> getRootFiles(Team team) throws HttpException {
         List<TreeFile> list = new ArrayList<>();
         list.add(getFolderWithAllProblems(team));
         Folder rootFolder = getData(FOLDERS_URL + team.getRootFolderId(), Folder.class);
@@ -91,7 +96,7 @@ public class BackendManager {
         return list;
     }
 
-    public List<TreeFile> getPersonalRootFiles() throws UnauthorizedException, HttpException {
+    public List<TreeFile> getPersonalRootFiles() throws HttpException {
         List<TreeFile> list = new ArrayList<>();
         list.add(getFolderWithAllProblems());
         User user = getUser();
@@ -100,7 +105,7 @@ public class BackendManager {
         return list;
     }
 
-    private Folder getFolderWithAllProblems() throws UnauthorizedException, HttpException {
+    private Folder getFolderWithAllProblems() throws HttpException {
         Folder all = new Folder("All", -1);
         all.setLoaded();
         List<Problem> allProblems = getAllProblems();
@@ -109,7 +114,7 @@ public class BackendManager {
         return all;
     }
 
-    private Folder getFolderWithAllProblems(Team team) throws UnauthorizedException, HttpException {
+    private Folder getFolderWithAllProblems(Team team) throws HttpException {
         Folder all = new Folder("All", -1);
         all.setLoaded();
         List<Problem> allProblems = getAllProblems(team);
@@ -118,17 +123,17 @@ public class BackendManager {
         return all;
     }
 
-    private List<Problem> getAllProblems() throws UnauthorizedException, HttpException {
+    private List<Problem> getAllProblems() throws HttpException {
         Problem[] problems = getData(USER_PROBLEMS_URL, Problem[].class);
         return Arrays.asList(problems);
     }
 
-    private List<Problem> getAllProblems(Team team) throws UnauthorizedException, HttpException {
+    private List<Problem> getAllProblems(Team team) throws HttpException {
         Problem[] problems = getData(TEAM_PROBLEMS_URL.replace(REPLACEMENT, team.getId()), Problem[].class);
         return Arrays.asList(problems);
     }
 
-    public List<TreeFile> getFolderFiles(String folderId) throws UnauthorizedException, HttpException {
+    public List<TreeFile> getFolderFiles(String folderId) throws HttpException {
         List<TreeFile> files = new ArrayList<>();
         files.addAll(getFolderSubFolders(folderId));
         List<Problem> problems = getFolderProblems(folderId);
@@ -137,39 +142,39 @@ public class BackendManager {
         return files;
     }
 
-    private Folder getFolder(String foldersId) throws UnauthorizedException, HttpException {
+    private Folder getFolder(String foldersId) throws HttpException {
         return getData(FOLDERS_URL + foldersId, Folder.class);
     }
 
-    private List<Folder> getFolderSubFolders(String folderId) throws UnauthorizedException, HttpException {
+    private List<Folder> getFolderSubFolders(String folderId) throws HttpException {
         Folder[] folders = getData(FOLDER_SUB_FOLDERS_URL.replace(REPLACEMENT, folderId), Folder[].class);
         return Arrays.asList(folders);
     }
 
-    private List<Problem> getFolderProblems(String folderId) throws UnauthorizedException, HttpException {
+    private List<Problem> getFolderProblems(String folderId) throws HttpException {
         Problem[] problems = getData(FOLDER_PROBLEMS_URL.replace(REPLACEMENT, folderId), Problem[].class);
         return Arrays.asList(problems);
     }
 
 
-    private Problem loadProblem(String problemId) throws UnauthorizedException, HttpException {
+    private Problem loadProblem(String problemId) throws HttpException {
         return getData(PROBLEMS_URL + problemId, Problem.class);
     }
 
-    public Submission loadSubmission(String submissionId) throws UnauthorizedException, HttpException {
+    public Submission loadSubmission(String submissionId) throws HttpException {
         return getData(SUBMISSIONS_URL + submissionId, Submission.class);
     }
 
-    public List<Submission> getProblemSubmissions(Problem problem) throws UnauthorizedException, HttpException {
+    public List<Submission> getProblemSubmissions(Problem problem) throws HttpException {
         Submission[] submissions = getData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), Submission[].class);
         return Arrays.asList(submissions);
     }
 
-    public Submission sendSubmission(Problem problem, Submission submission) throws UnauthorizedException, HttpException {
+    public Submission sendSubmission(Problem problem, Submission submission) throws HttpException {
         return sendData(PROBLEM_SUBMISSIONS_URL.replace(REPLACEMENT, String.valueOf(problem.getId())), submission, Submission.class);
     }
 
-    public void sendProblemState(Problem problem) throws UnauthorizedException, HttpException {
+    public void sendProblemState(Problem problem) throws HttpException {
         updateData(PROBLEMS_URL + problem.getId(), problem);
     }
 
@@ -182,13 +187,12 @@ public class BackendManager {
         return list.stream().map(ProblemReference::new).collect(Collectors.toList());
     }
 
-    private <T> T getData(String URL, Class<T> tClass) throws UnauthorizedException, HttpException {
+    private <T> T getData(String URL, Class<T> tClass) throws HttpException {
         GenericUrl url = new GenericUrl(URL);
         try {
             HttpRequest req = REQUEST_FACTORY.buildGetRequest(url);
             req.setParser(new JsonObjectParser(JSON_FACTORY));
             HttpResponse resp = req.execute();
-            //TODO: проверять status code
             return resp.parseAs(tClass);
         } catch (HttpResponseException ex) {
             if (ex.getStatusCode() == UNAUTHORIZED_CODE || ex.getStatusCode() == FORBIDDEN_CODE) {
@@ -200,7 +204,7 @@ public class BackendManager {
         }
     }
 
-    private <T> T sendData(String URL, T object, Class<T> tClass) throws UnauthorizedException, HttpException {
+    private <T> T sendData(String URL, T object, Class<T> tClass) throws HttpException {
         GenericUrl url = new GenericUrl(URL);
         try {
             JsonHttpContent content = new JsonHttpContent(JSON_FACTORY, object);
@@ -222,7 +226,7 @@ public class BackendManager {
         }
     }
 
-    private void updateData(String URL, Object object) throws UnauthorizedException, HttpException {
+    private void updateData(String URL, Object object) throws HttpException {
         GenericUrl url = new GenericUrl(URL);
         try {
             JsonHttpContent content = new JsonHttpContent(JSON_FACTORY, object);

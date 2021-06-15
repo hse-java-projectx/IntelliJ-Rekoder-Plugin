@@ -38,7 +38,7 @@ public class LogoutAction extends AnAction {
                 explorerManager.clearEverything();
                 problemManager.clearEverything();
                 credentials.setToken(null);
-                NotificationUtils.showToolWindowMessage("Logged out successfully", NotificationType.INFORMATION, project);
+                NotificationUtils.showToolWindowMessage("Successfully logged out", NotificationType.INFORMATION, project);
             }
         });
     }

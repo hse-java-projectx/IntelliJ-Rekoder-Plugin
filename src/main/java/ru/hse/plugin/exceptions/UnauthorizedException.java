@@ -1,6 +1,6 @@
 package ru.hse.plugin.exceptions;
 
-public class UnauthorizedException extends Exception {
+public class UnauthorizedException extends HttpException {
     public UnauthorizedException() {
         super();
     }
