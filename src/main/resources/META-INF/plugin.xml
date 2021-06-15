@@ -4,7 +4,61 @@
     <vendor email="bubnovdanilbk@gmail.com" url="http://www.rekoder.xyz">Rekoder</vendor>
 
     <description><![CDATA[
-    Plugin allows to interact with Rekoder service
+        <p>
+          With the Rekoder plugin, you can view, test and submit problems to Rekoder right inside of JetBrains IntelliJ Platform based IDEs.
+        </p>
+        <br>
+        <strong>Exprore problems</strong>
+        <p>
+          <img src="https://ghcdn.rawgit.org/hse-java-projectx/IntelliJ-Rekoder-Plugin/master/images/ExploreProblems.gif">
+        <ul>
+          <li>
+            Login to Rekoder
+          </li>
+          <li>
+            Choose yourself or a team
+          </li>
+          <li>
+            Choose problem
+          </li>
+          <li>
+            View information about problem and preview your previous code
+          </li>
+        </ul>
+        <strong>Solve problems</strong>
+        <p>
+          <img src="https://ghcdn.rawgit.org/hse-java-projectx/IntelliJ-Rekoder-Plugin/master/images/SolveProblems.gif">
+        <ul>
+          <li>
+            Choose problem and click "Start solving"
+          </li>
+          <li>
+            Write solution
+          </li>
+          <li>
+            Add or remove tests
+          </li>
+          <li>
+            Test your solution and submit it to Rekoder
+          </li>
+        </ul>
+        <strong>Run external commands</strong>
+        <p>
+          <img src="https://ghcdn.rawgit.org/hse-java-projectx/IntelliJ-Rekoder-Plugin/master/images/RunCommands.gif">
+        <ul>
+          <li>
+            In Rekoder plugin settings add commands which will be run after submitting solution to Rekoder
+          </li>
+          <li>
+            You can use some variables which represent internal state of plugin ($PROBLEM_NAME or $FILE_PATH)
+          </li>
+           <li>
+            Click "Help" in Rekoder setting to see all variables
+          </li>
+        </ul>
+        <p>
+          For example you can use cli for submitting problems to Codeforces to automatically send your solution to this platform
+        </p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
