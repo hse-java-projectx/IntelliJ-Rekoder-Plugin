@@ -16,6 +16,10 @@ public class Problem {
     private String name = "";
     @Key
     private String statement = "";
+    @Key
+    private String inputFormat = "";
+    @Key
+    private String outputFormat = "";
     @Key("problemUrl")
     private String source = "";
     @Key
@@ -35,7 +39,17 @@ public class Problem {
     }
 
     public String getStatement() {
-        return statement;
+        StringBuilder builder = new StringBuilder();
+        builder.append(statement);
+        if (inputFormat != null && !inputFormat.isEmpty()) {
+            builder.append("\n").append("<h2>Input format</h2>").append("\n");
+            builder.append(inputFormat);
+        }
+        if (outputFormat != null && !outputFormat.isEmpty()) {
+            builder.append("\n").append("<h2>Output format</h2>").append("\n");
+            builder.append(outputFormat);
+        }
+        return builder.toString();
     }
 
     public State getState() {
