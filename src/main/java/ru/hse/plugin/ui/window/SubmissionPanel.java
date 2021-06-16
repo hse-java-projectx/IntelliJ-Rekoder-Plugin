@@ -406,6 +406,8 @@ public class SubmissionPanel extends JPanel {
                                 setCurrentProblem(problem);
                             });
                             NotificationUtils.showToolWindowMessage("Submitted successfully", NotificationType.INFORMATION, project);
+                            Problem originalProblem = backendManager.getOriginalProblem(problem);
+                            String problemCreator = originalProblem.getOwnerId();
                             Document document = editor.get().getDocument();
                             VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                             progressManager.run(new Task.Backgroundable(project, "Running commands", true) {
@@ -414,7 +416,7 @@ public class SubmissionPanel extends JPanel {
                                     CommandsExecutor commandsExecutor = new CommandsExecutor(problem, submission, virtualFile, project);
                                     Commands commands = Commands.getInstance();
                                     commands.getCommands().stream().
-                                            filter(c -> c.getProblemOwner().isEmpty() || c.getProblemOwner().equals(problem.getSource())).
+                                            filter(c -> c.getProblemOwner().isEmpty() || c.getProblemOwner().equals(problemCreator)).
                                             filter(Command::isEnabled).
                                             forEach(c -> commandsExecutor.execute(c.getCommandText()));
                                 }

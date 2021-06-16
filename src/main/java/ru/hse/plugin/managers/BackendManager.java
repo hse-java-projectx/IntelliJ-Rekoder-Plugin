@@ -142,6 +142,13 @@ public class BackendManager {
         return files;
     }
 
+    public Problem getOriginalProblem(Problem problem) throws HttpException {
+        if (problem.getOriginalProblemId() == null) {
+            return problem;
+        }
+        return loadProblem(problem.getOriginalProblemId().toString());
+    }
+
     private Folder getFolder(String foldersId) throws HttpException {
         return getData(FOLDERS_URL + foldersId, Folder.class);
     }

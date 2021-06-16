@@ -42,7 +42,7 @@ public class LoginAction extends AnAction {
             try {
                 String finalLogin = login;
                 String finalPassword = password;
-                token =  progressManager.run(new Task.WithResult<String, HttpException>(project, "Login", true) {
+                token = progressManager.run(new Task.WithResult<String, HttpException>(project, "Login", true) {
                     @Override
                     protected String compute(@NotNull ProgressIndicator indicator) throws HttpException {
                         return new BackendManager(Credentials.getInstance()).login(finalLogin, finalPassword);

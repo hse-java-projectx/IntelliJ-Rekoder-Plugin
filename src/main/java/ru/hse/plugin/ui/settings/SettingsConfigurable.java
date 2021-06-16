@@ -162,7 +162,7 @@ public class SettingsConfigurable implements SearchableConfigurable {
             gridBag.setDefaultFill(GridBagConstraints.HORIZONTAL);
             gridBag.setDefaultInsets(0, 5, 0, 5);
 
-            JLabel problemOwnerLabel = new JLabel("Problem owner:");
+            JLabel problemOwnerLabel = new JLabel("Problem creator:");
             JLabel commandTextLabel = new JLabel("Command text:");
 
             add(problemOwnerLabel, gridBag.nextLine().next());

@@ -30,6 +30,8 @@ public class Problem {
     private int numberOfSuccessfulSubmissions = 0;
     @Key
     private Owner owner;
+    @Key
+    private Integer originalProblemId = null;
 
     private List<Submission> submissions = Collections.emptyList();
     private boolean submissionsSet = false;
@@ -84,6 +86,10 @@ public class Problem {
 
     public List<TestImpl> getTests() {
         return tests;
+    }
+
+    public Integer getOriginalProblemId() {
+        return originalProblemId;
     }
 
     public void setTests(List<Test> tests) {
