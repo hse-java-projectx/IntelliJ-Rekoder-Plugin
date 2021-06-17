@@ -27,11 +27,11 @@ public class Problem {
     @Key
     private List<TestImpl> tests = Collections.emptyList();
     @Key
-    private int numberOfSuccessfulSubmissions = 0;
-    @Key
     private Owner owner;
     @Key
     private Integer originalProblemId = null;
+
+    private int numberOfSuccessfulSubmissions = 0;
 
     private List<Submission> submissions = Collections.emptyList();
     private boolean submissionsSet = false;
@@ -84,6 +84,13 @@ public class Problem {
         return submissions;
     }
 
+    public void addSubmission(Submission submission) {
+        submissions.add(submission);
+        if (submission.isSuccessful()) {
+            numberOfSuccessfulSubmissions++;
+        }
+    }
+
     public List<TestImpl> getTests() {
         return tests;
     }
@@ -99,7 +106,7 @@ public class Problem {
     public void setSubmissions(List<Submission> submissions) {
         submissionsSet = true;
         this.submissions = new ArrayList<>(submissions);
-        this.numberOfSuccessfulSubmissions = (int) this.submissions.stream().filter(s -> s.getVerdict().equals("ok")).count();
+        this.numberOfSuccessfulSubmissions = (int) this.submissions.stream().filter(Submission::isSuccessful).count();
     }
 
     public boolean isSubmissionsSet() {

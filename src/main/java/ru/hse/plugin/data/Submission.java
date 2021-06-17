@@ -99,6 +99,10 @@ public class Submission {
         this.order = String.valueOf(order);
     }
 
+    public boolean isSuccessful() {
+        return feedback.successful;
+    }
+
     @Override
     public String toString() {
         return order;
@@ -113,5 +117,7 @@ public class Submission {
         private String timeConsumed = "";
         @Key
         private String memoryConsumed = "";
+        @Key
+        private boolean successful = false;
     }
 }

@@ -74,7 +74,7 @@ public class ExplorerManager {
 
 
 
-    public void updateTeamsList() throws UnauthorizedException, HttpException {
+    public void updateTeamsList() throws HttpException {
         BackendManager backendManager = new BackendManager(Credentials.getInstance());
         JBList<ContentHolder> teams = getTeamsList();
         List<Team> teamsList = backendManager.getTeams();

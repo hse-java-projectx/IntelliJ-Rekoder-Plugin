@@ -41,6 +41,7 @@ public class RefreshAction extends AnAction {
                     problemManager.clearEverything();
                     explorerManager.updateTeamsList();
                 } catch (UnauthorizedException ex) {
+                    ex.printStackTrace();
                     explorerManager.clearEverything();
                     problemManager.clearEverything();
                     NotificationUtils.showAuthorisationFailedNotification(project);

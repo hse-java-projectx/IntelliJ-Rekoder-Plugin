@@ -402,7 +402,7 @@ public class SubmissionPanel extends JPanel {
                             backendManager.sendProblemState(problem);
                             ThreadUtils.runWriteAction(() -> {
                                 submission.setSent(true);
-                                problem.getSubmissions().add(submission);
+                                problem.addSubmission(submission);
                                 setCurrentProblem(problem);
                             });
                             NotificationUtils.showToolWindowMessage("Submitted successfully", NotificationType.INFORMATION, project);

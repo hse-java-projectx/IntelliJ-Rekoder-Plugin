@@ -13,5 +13,6 @@
 ## [0.0.2]
 ### Added
 - Input format and output format of problems
+- Problem creator trigger for commands
 ### Changed
 - Network errors
