@@ -1,5 +1,9 @@
 # IntelliJ Rekoder Plugin
 
+## Install
+
+[Rekoder in JetBrains Marketplace](https://plugins.jetbrains.com/plugin/17005-rekoder)
+
 ## Description
 <!-- Plugin description -->
 View, test and submit problems to **Rekoder**
